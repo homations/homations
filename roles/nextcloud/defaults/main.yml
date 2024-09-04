@@ -5,7 +5,7 @@ nextcloud_cache_enabled: false
 
 # directories
 nextcloud_data_directory: "{{ homations_docker_data }}/nextcloud/data"
-nextcloud_db_directory: "{{ homations_docker_data }}/nextcloud/db"
+nextcloud_db_data_directory: "{{ homations_docker_data }}/nextcloud/db"
 nextcloud_cache_directory: "{{ homations_docker_data }}/nextcloud/cache"
 
 # network

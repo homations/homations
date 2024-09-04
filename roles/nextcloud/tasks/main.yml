@@ -8,11 +8,7 @@
         state: directory
       with_items:
         - "{{ nextcloud_data_directory }}"
-        - "{{ nextcloud_db_directory }}"
-
-    - name: Create Docker Network
-      docker_network:
-        name: "{{ nextcloud_intra_network_name }}"
+        - "{{ nextcloud_db_data_directory }}"
 
     - name: Create Redis Directories
       when: nextcloud_chache_enabled is true
@@ -21,6 +17,10 @@
         state: directory
       with_items:
         - "{{ nextcloud_cache_directory }}"
+
+    - name: Create Docker Network
+      docker_network:
+        name: "{{ nextcloud_intra_network_name }}"
 
     - name: Redis Docker Container
       when: nextcloud_chache_enabled is true
@@ -41,7 +41,7 @@
         image: "{{ nextcloud_db_image_name }}:{{ nextcloud_db_image_version }}"
         pull: true
         volumes:
-          - "{{ nextcloud_db_directory }}:/var/lib/postgresql/data"
+          - "{{ nextcloud_db_data_directory }}:/var/lib/postgresql/data"
         networks:
           - name: "{{ nextcloud_intra_network_name }}"
         restart_policy: "{{ nextcloud_db_restart_policy }}"
@@ -59,12 +59,12 @@
       community.docker.docker_container:
         name: "{{ nextcloud_container_name }}"
         image: "{{ nextcloud_image_name }}:{{ nextcloud_image_version }}"
+        image_name_mismatch: "recreate"
         pull: true
         volumes:
           - "{{ nextcloud_data_directory }}:/var/www/html"
         restart_policy: "{{ nextcloud_restart_policy }}"
-        networks:
-          - name: "{{ nextcloud_docker_network }}"
+        networks: "{{ nextcloud_docker_network }}"
         # memory: "{{ nextcloud_memory }}"
         labels:
           traefik.enable: "{{ nextcloud_available_externally | string }}"
