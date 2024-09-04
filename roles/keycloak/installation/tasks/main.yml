@@ -1,0 +1,80 @@
+---
+- name: Start Keycloak
+  when: keycloak_enabled is true
+  block:
+    - name: Create Keycloak Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ keycloak_data_directory }}"
+        - "{{ keycloak_config_directory }}"
+        - "{{ keycloak_database_data_directory }}"
+
+    - name: Template Keycloak Dockerfile
+      ansible.builtin.template:
+        src: Dockerfile
+        dest: "{{ keycloak_config_directory }}/Dockerfile"
+      register: template_config
+
+    - name: Create the keycloak network
+      community.docker.docker_network:
+        name: "{{ keycloak_database_network }}"
+
+    - name: Keycloak Database Docker Container
+      community.docker.docker_container:
+        name: "{{ keycloak_database_container_name }}"
+        hostname: "{{ keycloak_database_container_name }}"
+        image: "{{ keycloak_database_image_name }}:{{ keycloak_database_image_version }}"
+        pull: true
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ keycloak_database_data_directory }}:/var/lib/postgresql/data"
+        env: "{{ keycloak_database_environment_variables }}"
+        networks:
+          - name: "{{ keycloak_database_network }}"
+        ports:
+          - "5432:5432"
+
+    - name: Build Keycloak Docker Container
+      community.docker.docker_image:
+        build:
+          path: "{{ keycloak_config_directory }}"
+        name: "{{ keycloak_custom_image_name }}"
+        tag: "{{ keycloak_image_version }}"
+        source: build
+
+    - name: Keycloak Docker Container
+      community.docker.docker_container:
+        name: "{{ keycloak_container_name }}"
+        image: "{{ keycloak_custom_image_name }}:{{ keycloak_image_version }}"
+        env: "{{ keycloak_environment_variables }}"
+        networks:
+          - name: "{{ homations_traefik_network }}"
+          - name: "{{ keycloak_database_network }}"
+        restart_policy: unless-stopped
+        labels:
+          traefik.enable: "{{ keycloak_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.keycloak.rule: "Host(`{{ keycloak_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.keycloak.entrypoints: "https"
+          traefik.http.routers.keycloak.tls.certresolver: "dnsresolver"
+          traefik.http.routers.keycloak.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.keycloak.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.keycloak.loadbalancer.server.port: "8080"
+          traefik.http.middlewares.keycloak-ipwhitelist.ipwhitelist.sourcerange: "{{ keycloak_ip_whitelist }}"
+          traefik.http.routers.keycloak.middlewares: "keycloak-ipwhitelist@docker"
+        command: start --optimized --hostname {{ keycloak_hostname }}.{{ homations_domain }} --hostname-strict false --proxy edge --http-enabled true
+
+- name: Stop Keycloak
+  when: keycloak_enabled is false
+  block:
+    - name: Stop Keycloak
+      community.docker.docker_container:
+        name: "{{ keycloak_container_name }}"
+        state: absent
+
+    - name: Stop Keycloak Database
+      community.docker.docker_container:
+        name: "{{ keycloak_database_container_name }}"
+        state: absent
