@@ -20,6 +20,7 @@ traefik_port_https: "443"
 traefik_port_ui: "8083"
 traefik_ui_hostname: "traefik"
 traefik_ui_ip_whitelist: "0.0.0.0/0"
+traefik_ui_forwardauth_enabled: false
 
 traefik_container_name: "traefik"
 traefik_image_name: "traefik"

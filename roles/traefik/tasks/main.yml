@@ -21,6 +21,10 @@
         name: "{{ homations_traefik_network }}"
 
     - name: Traefik Docker Container
+      vars:
+        traefik_middleware_list_ipwhitelist: ['traefik-ui-ipwhitelist']
+        traefik_middleware_list_forwardauth: "{{['traefik-ui-forwardauth'] if (traefik_ui_forwardauth_enabled) else [] }}"
+        traefik_middleware_list: "{{ traefik_middleware_list_ipwhitelist + traefik_middleware_list_forwardauth }}"
       community.docker.docker_container:
         name: "{{ traefik_container_name }}"
         image: "{{ traefik_image_name }}:{{ traefik_image_version }}"
@@ -39,8 +43,10 @@
           traefik.http.routers.traefik-ui.tls.certresolver: "dnsresolver"
           traefik.http.routers.traefik-ui.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.traefik-ui.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.routers.traefik-ui.middlewares: "traefik-ui-ipwhitelist"
+          traefik.http.middlewares.traefik-ui-chain.chain.middlewares: "{{ traefik_middleware_list | join(', ') }}"
           traefik.http.middlewares.traefik-ui-ipwhitelist.ipwhitelist.sourcerange: "{{ traefik_ui_ip_whitelist }}"
-          traefik.http.routers.traefik-ui.middlewares: "traefik-ui-ipwhitelist@docker"
+          traefik.http.middlewares.traefik-ui-forwardauth.forwardauth.address: https://{{ keycloak_hostname }}.{{ homations_domain }}/realms/homations"
           traefik.http.routers.traefik-ui.service: "api@internal"
         volumes:
           - "{{ traefik_config_directory }}/traefik.yml:/etc/traefik/traefik.yml:ro"
