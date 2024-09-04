@@ -5,13 +5,32 @@
     observability_prometheus_config_file_name: "prometheus.yml"
     observability_prometheus_host_config_file_path: "{{ observability_prometheus_config_directory }}/{{ observability_prometheus_config_file_name }}"
   block:
-    - name: Create Prometheus Directories
+    - name: Create Prometheus Config Directories
       ansible.builtin.file:
-        path: "{{ item }}"
+        path: "{{ observability_prometheus_config_directory }}"
         state: directory
-      with_items:
-        - "{{ observability_prometheus_data_directory }}"
-        - "{{ observability_prometheus_config_directory }}"
+
+    - name: Create Prometheus Data Directories
+      become: true
+      vars: 
+        owner: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
+        group: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
+      ansible.builtin.file:
+        path: "{{ observability_prometheus_data_directory }}"
+        owner: "{{ owner }}"
+        group: "{{ group }}"
+        state: directory
+        recurse: true
+
+    - name: Create the Prometheus Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ observability_prometheus_volume_name }}"
+        driver: local
+        driver_options:
+          type: none
+          device: "{{ observability_prometheus_data_directory }}"
+          o: bind
 
     - name: Template prometheus.yml
       ansible.builtin.template:
@@ -27,14 +46,15 @@
           - name: "{{ homations_internal_network }}"
         observability_prometheus_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if observability_prometheus_available_externally else homations_internal_docker_network }}"
         observability_prometheus_container_config_file_path: "/etc/prometheus/{{ observability_prometheus_config_file_name }}"
+        observability_prometheus_volume_spec: "{{ observability_prometheus_volume_name if (homations_docker_volume_enabled) else observability_prometheus_data_directory }}"
       community.docker.docker_container:
         name: "{{ observability_prometheus_container_name }}"
         image: "{{ observability_prometheus_image_name }}:{{ observability_prometheus_image_version }}"
         image_name_mismatch: "recreate"
-        user: "1000:1000"
+        user: "{{ (not homations_docker_volume_enabled) | ternary('1000:1000', omit) | quote }}"
         pull: true
         volumes:
-          - "{{ observability_prometheus_data_directory }}:/prometheus:rw"
+          - "{{ observability_prometheus_volume_spec }}:/prometheus:rw"
           - "{{ observability_prometheus_host_config_file_path }}:{{ observability_prometheus_container_config_file_path }}"
           - "/etc/timezone:/etc/timezone:ro"
         networks: "{{ observability_prometheus_docker_network }}"
@@ -61,4 +81,10 @@
     - name: Stop Prometheus
       community.docker.docker_container:
         name: "{{ observability_prometheus_container_name }}"
+        state: absent
+
+    - name: Remove the Prometheus Docker Volume
+      when: homations_docker_volume_enabled
+      community.docker.docker_volume:
+        name: "{{ observability_prometheus_volume_name }}"
         state: absent

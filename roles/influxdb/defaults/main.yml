@@ -15,6 +15,7 @@ influxdb_container_name: "influxdb"
 influxdb_image_name: "influxdb"
 influxdb_image_version: "2"
 influxdb_restart_policy: "unless-stopped"
+influxdb_volume_name: "{{ influxdb_container_name }}_data"
 
 # env
 influxdb_environment_variables:

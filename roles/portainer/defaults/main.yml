@@ -15,6 +15,7 @@ portainer_container_name: "portainer"
 portainer_image_name: "portainer/portainer-ce"
 portainer_image_version: "latest"
 portainer_restart_policy: "unless-stopped"
+portainer_volume_name: "{{ portainer_container_name }}_data"
 
 # specs
 portainer_memory: 1g
