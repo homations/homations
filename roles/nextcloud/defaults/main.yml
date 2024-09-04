@@ -1,0 +1,36 @@
+---
+nextcloud_enabled: false
+nextcloud_available_externally: false
+nextcloud_cache_enabled: false
+
+# directories
+nextcloud_data_directory: "{{ homations_docker_data }}/nextcloud/data"
+nextcloud_db_directory: "{{ homations_docker_data }}/nextcloud/db"
+nextcloud_cache_directory: "{{ homations_docker_data }}/nextcloud/cache"
+
+# network
+nextcloud_port: "80"
+nextcloud_hostname: "nextcloud"
+nextcloud_ip_whitelist: "0.0.0.0/0"
+nextcloud_intra_network_name: "nextcloud-network"
+
+# docker
+nextcloud_container_name: "nextcloud"
+nextcloud_image_name: "nextcloud"
+nextcloud_image_version: "latest"
+nextcloud_restart_policy: "unless-stopped"
+
+nextcloud_db_container_name: "nextcloud-postgres"
+nextcloud_db_image_name: "postgres"
+nextcloud_db_image_version: "latest"
+nextcloud_db_restart_policy: "unless-stopped"
+
+nextcloud_cache_container_name: "nextcloud-redis"
+nextcloud_cache_image_name: "redis"
+nextcloud_cache_image_version: "alpine"
+nextcloud_cache_restart_policy: "unless-stopped"
+
+# specs
+nextcloud_memory: 1g
+nextcloud_db_memory: 1g
+nextcloud_cache_memory: 1g
