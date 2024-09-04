@@ -1,0 +1,63 @@
+---
+- name: Start Grafana
+  when: grafana_enabled is true
+  vars:
+    grafana_config_file_name: "grafana.yml"
+    grafana_host_config_file_path: "{{ grafana_config_directory }}/{{ grafana_config_file_name }}"
+  block:
+    - name: Create grafana Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ grafana_data_directory }}"
+        - "{{ grafana_config_directory }}"
+
+    # - name: Template grafana.yml
+    #   ansible.builtin.template:
+    #     src: grafana.yml.j2
+    #     dest: "{{ grafana_host_config_file_path }}"
+    #   register: grafana_template_config
+
+    - name: Grafana Docker Container
+      vars:
+        homations_proxy_docker_network:
+          - name: "{{ homations_traefik_network }}"
+        homations_internal_docker_network:
+          - name: "{{ homations_internal_network }}"
+        grafana_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if grafana_available_externally else homations_internal_docker_network }}"
+        # grafana_container_config_file_path: "/etc/grafana/{{ grafana_config_file_name }}"
+      community.docker.docker_container:
+        name: "{{ grafana_container_name }}"
+        image: "{{ grafana_image_name }}:{{ grafana_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        user: "1000"
+        env:
+          GF_SECURITY_ADMIN_PASSWORD={{ grafana_security_admin_password }}
+        volumes:
+          - "{{ grafana_data_directory }}:/var/lib/grafana:rw"
+          # - "{{ grafana_host_config_file_path }}:{{ grafana_container_config_file_path }}"
+          - "/etc/timezone:/etc/timezone:ro"
+        networks: "{{ grafana_docker_network }}"
+        restart_policy: "{{ grafana_restart_policy }}"
+        # memory: "{{ grafana_memory }}"
+        labels:
+          traefik.enable: "{{ grafana_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.grafana.rule: "Host(`{{ grafana_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.grafana.entrypoints: "https"
+          traefik.http.routers.grafana.tls.certresolver: "dnsresolver"
+          traefik.http.routers.grafana.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.grafana.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.grafana.loadbalancer.server.port: "3000"
+          traefik.http.middlewares.grafana-ipwhitelist.ipwhitelist.sourcerange: "{{ grafana_ip_whitelist }}"
+          traefik.http.routers.grafana.middlewares: "grafana-ipwhitelist@docker"
+
+- name: Stop Grafana
+  when: grafana_enabled is false
+  block:
+    - name: Stop Grafana
+      community.docker.docker_container:
+        name: "{{ grafana_container_name }}"
+        state: absent
