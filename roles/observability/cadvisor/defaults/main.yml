@@ -1,0 +1,11 @@
+---
+observability_cadvisor_enabled: false
+
+# docker
+observability_cadvisor_container_name: "cadvisor"
+observability_cadvisor_image_name: "gcr.io/cadvisor/cadvisor"
+observability_cadvisor_image_version: "latest"
+observability_cadvisor_restart_policy: "unless-stopped"
+
+# specs
+observability_cadvisor_memory: 1g

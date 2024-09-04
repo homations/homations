@@ -1,0 +1,30 @@
+---
+- name: Start cAdvisor
+  when: observability_cadvisor_enabled is true
+  vars:
+    observability_cadvisor_config_file_name: "cadvisor.yml"
+    observability_cadvisor_host_config_file_path: "{{ observability_cadvisor_config_directory }}/{{ observability_cadvisor_config_file_name }}"
+  block:
+    - name: cAdvisor Docker Container
+      community.docker.docker_container:
+        name: "{{ observability_cadvisor_container_name }}"
+        image: "{{ observability_cadvisor_image_name }}:{{ observability_cadvisor_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:rw
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+        networks:
+          - name: "{{ homations_internal_network }}"
+        restart_policy: "{{ observability_cadvisor_restart_policy }}"
+        # memory: "{{ observability_cadvisor_memory }}"
+
+- name: Stop cAdvisor
+  when: observability_cadvisor_enabled is false
+  block:
+    - name: Stop cAdvisor
+      community.docker.docker_container:
+        name: "{{ observability_cadvisor_container_name }}"
+        state: absent

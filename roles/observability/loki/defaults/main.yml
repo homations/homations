@@ -1,0 +1,22 @@
+---
+observability_loki_enabled: false
+
+# directories
+observability_loki_data_directory: "{{ homations_docker_data }}/loki"
+observability_loki_config_directory: "{{ homations_docker_config }}/loki"
+
+# docker
+observability_loki_container_name: "loki"
+observability_loki_image_name: "grafana/loki"
+observability_loki_image_version: "latest"
+observability_loki_restart_policy: "unless-stopped"
+
+# loki
+observability_loki_retention_time: "30d"
+observability_loki_scrape_interval: "15s"
+
+# specs
+observability_loki_memory: 1g
+
+# config
+observability_alertmanager_container_name: alertmanager

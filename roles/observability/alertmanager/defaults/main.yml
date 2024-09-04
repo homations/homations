@@ -1,0 +1,39 @@
+---
+observability_alertmanager_enabled: false
+observability_alertmanager_available_externally: false
+
+# directories
+observability_alertmanager_data_directory: "{{ homations_docker_data }}/alertmanager"
+observability_alertmanager_config_directory: "{{ homations_docker_config }}/alertmanager"
+
+# network
+observability_alertmanager_hostname: "alertmanager"
+observability_alertmanager_ip_whitelist: "0.0.0.0/0"
+
+# docker
+observability_alertmanager_container_name: "alertmanager"
+observability_alertmanager_image_name: "prom/alertmanager"
+observability_alertmanager_image_version: "latest"
+observability_alertmanager_restart_policy: "unless-stopped"
+
+# specs
+observability_alertmanager_memory: 1g
+
+# alertmanager
+observability_alertmanager_config_global_resolve_timeout: "5m"
+observability_alertmanager_config_route_group_wait: "30s"
+observability_alertmanager_config_route_group_interval: "5m"
+observability_alertmanager_config_route_repeat_interval: "4h"
+observability_alertmanager_config_route_routes: []
+  # - receiver: 'telegram'
+
+observability_alertmanager_default_config:
+  - name: 'default'
+
+observability_alertmanager_config: []
+  # - name: 'telegram'
+  #   telegram_configs:
+  #     - bot_token: TOKEN
+  #       api_url: https://api.telegram.org
+  #       chat_id: 12345
+  #       parse_mode: ''

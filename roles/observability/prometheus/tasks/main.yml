@@ -1,0 +1,64 @@
+---
+- name: Start Prometheus
+  when: observability_prometheus_enabled is true
+  vars:
+    observability_prometheus_config_file_name: "prometheus.yml"
+    observability_prometheus_host_config_file_path: "{{ observability_prometheus_config_directory }}/{{ observability_prometheus_config_file_name }}"
+  block:
+    - name: Create Prometheus Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ observability_prometheus_data_directory }}"
+        - "{{ observability_prometheus_config_directory }}"
+
+    - name: Template prometheus.yml
+      ansible.builtin.template:
+        src: prometheus.yml.j2
+        dest: "{{ observability_prometheus_host_config_file_path }}"
+      register: observability_prometheus_template_config
+
+    - name: Prometheus Docker Container
+      vars:
+        homations_proxy_docker_network:
+          - name: "{{ homations_traefik_network }}"
+        homations_internal_docker_network:
+          - name: "{{ homations_internal_network }}"
+        observability_prometheus_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if observability_prometheus_available_externally else homations_internal_docker_network }}"
+        observability_prometheus_container_config_file_path: "/etc/prometheus/{{ observability_prometheus_config_file_name }}"
+      community.docker.docker_container:
+        name: "{{ observability_prometheus_container_name }}"
+        image: "{{ observability_prometheus_image_name }}:{{ observability_prometheus_image_version }}"
+        image_name_mismatch: "recreate"
+        user: "1000:1000"
+        pull: true
+        volumes:
+          - "{{ observability_prometheus_data_directory }}:/prometheus:rw"
+          - "{{ observability_prometheus_host_config_file_path }}:{{ observability_prometheus_container_config_file_path }}"
+          - "/etc/timezone:/etc/timezone:ro"
+        networks: "{{ observability_prometheus_docker_network }}"
+        restart_policy: "{{ observability_prometheus_restart_policy }}"
+        # memory: "{{ observability_prometheus_memory }}"
+        labels:
+          traefik.enable: "{{ observability_prometheus_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.prometheus.rule: "Host(`{{ observability_prometheus_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.prometheus.entrypoints: "https"
+          traefik.http.routers.prometheus.tls.certresolver: "dnsresolver"
+          traefik.http.routers.prometheus.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.prometheus.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.prometheus.loadbalancer.server.port: "9090"
+          traefik.http.middlewares.prometheus-ipwhitelist.ipwhitelist.sourcerange: "{{ observability_prometheus_ip_whitelist }}"
+          traefik.http.routers.prometheus.middlewares: "prometheus-ipwhitelist@docker"
+        command:
+          - "--storage.tsdb.retention.time={{ observability_prometheus_retention_time }}"
+          - "--config.file={{ observability_prometheus_container_config_file_path }}"
+
+- name: Stop Prometheus
+  when: observability_prometheus_enabled is false
+  block:
+    - name: Stop Prometheus
+      community.docker.docker_container:
+        name: "{{ observability_prometheus_container_name }}"
+        state: absent

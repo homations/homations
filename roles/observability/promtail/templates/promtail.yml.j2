@@ -1,0 +1,34 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+# Used for tracking progress of log scraping
+positions:
+  filename: /tmp/positions.yaml
+
+# Where promtail should send the scraped logs
+clients:
+  - url: http://{{ observability_loki_container_name }}:3100/loki/api/v1/push
+
+# Used for defining scrape jobs for collecting logs
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/*log
+
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)' # Remove prefix /
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'logstream'
+    pipeline_stages:
+      - docker: {}

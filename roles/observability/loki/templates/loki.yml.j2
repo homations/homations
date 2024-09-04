@@ -1,0 +1,51 @@
+analytics:
+  reporting_enabled: false # Disable Grafana Labs analytics report
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9095
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /tmp/loki
+  storage:
+    filesystem:
+      chunks_directory: /tmp/loki/chunks
+      rules_directory: /tmp/loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+# Loki uses schemas to determine which format to use when storing and querying the data
+schema_config:
+  configs:
+    - from: 2020-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+compactor:
+  retention_enabled: true # Activate retention
+
+limits_config:
+  retention_period: 90d # Retention interval
+
+# Manages and evaluates rule and/or alert expressions
+ruler:
+  enable_api: true
+{% if observability_alertmanager_enabled is defined and observability_alertmanager_enabled %}
+  alertmanager_url: http://{{ observability_alertmanager_container_name }}:9093
+{% endif %}
