@@ -1,0 +1,63 @@
+---
+- name: Start Alertmanager
+  when: observability_alertmanager_enabled is true
+  vars:
+    observability_alertmanager_config_file_name: "alertmanager.yml"
+    observability_alertmanager_host_config_file_path: "{{ observability_alertmanager_config_directory }}/{{ observability_alertmanager_config_file_name }}"
+  block:
+    - name: Create Alertmanager Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ observability_alertmanager_data_directory }}"
+        - "{{ observability_alertmanager_config_directory }}"
+
+    - name: Template Alertmanager.yml
+      ansible.builtin.template:
+        src: alertmanager.yml.j2
+        dest: "{{ observability_alertmanager_host_config_file_path }}"
+      register: observability_alertmanager_template_config
+
+    - name: Alertmanager Docker Container
+      vars:
+        homations_proxy_docker_network:
+          - name: "{{ homations_traefik_network }}"
+        homations_internal_docker_network:
+          - name: "{{ homations_internal_network }}"
+        observability_alertmanager_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if observability_alertmanager_available_externally else homations_internal_docker_network }}"
+        observability_alertmanager_container_config_file_path: "/etc/alertmanager/{{ observability_alertmanager_config_file_name }}"
+      community.docker.docker_container:
+        name: "{{ observability_alertmanager_container_name }}"
+        image: "{{ observability_alertmanager_image_name }}:{{ observability_alertmanager_image_version }}"
+        image_name_mismatch: "recreate"
+        user: "1000:1000"
+        pull: true
+        volumes:
+          - "{{ observability_alertmanager_data_directory }}:/alertmanager:rw"
+          - "{{ observability_alertmanager_host_config_file_path }}:{{ observability_alertmanager_container_config_file_path }}"
+          - "/etc/timezone:/etc/timezone:ro"
+        networks: "{{ observability_alertmanager_docker_network }}"
+        restart_policy: "{{ observability_alertmanager_restart_policy }}"
+        # memory: "{{ observability_alertmanager_memory }}"
+        labels:
+          traefik.enable: "{{ observability_alertmanager_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.alertmanager.rule: "Host(`{{ observability_alertmanager_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.alertmanager.entrypoints: "https"
+          traefik.http.routers.alertmanager.tls.certresolver: "dnsresolver"
+          traefik.http.routers.alertmanager.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.alertmanager.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.alertmanager.loadbalancer.server.port: "9093"
+          traefik.http.middlewares.alertmanager-ipwhitelist.ipwhitelist.sourcerange: "{{ observability_alertmanager_ip_whitelist }}"
+          traefik.http.routers.alertmanager.middlewares: "alertmanager-ipwhitelist@docker"
+        command:
+          - "--config.file={{ observability_alertmanager_container_config_file_path }}"
+
+- name: Stop Alertmanager
+  when: observability_alertmanager_enabled is false
+  block:
+    - name: Stop Alertmanager
+      community.docker.docker_container:
+        name: "{{ observability_alertmanager_container_name }}"
+        state: absent

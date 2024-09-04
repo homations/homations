@@ -1,0 +1,34 @@
+---
+api:
+  insecure: false
+  dashboard: {{ traefik_dashboard_enabled }}
+  debug: {{ traefik_debug_enabled }}
+entryPoints:
+  http:
+    address: ":{{ traefik_port_http }}"
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
+  https:
+    address: ":{{ traefik_port_https }}"
+    http:
+      tls:
+        certResolver: "{{ traefik_dns_provider }}"
+        domains:
+          main: "{{ homations_domain }}"
+          sans: 
+            - "*.{{ homations_domain }}"
+  traefik:
+    address: ":{{ traefik_port_ui}}"
+serversTransport:
+  insecureSkipVerify: true
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  # file:
+  #   filename: /config.yml
+certificatesResolvers: 
+  {{ traefik_cert_resolvers | to_yaml(indent=4) }}

@@ -1,0 +1,56 @@
+---
+# External Access
+# Traefik will allow access to certain applications externally. To enable this you'll either; a domain name that points to your
+# home static IP address, the cloudflare with the cloudflare_ddns dynamic DNS container enabled, or use a dynamic DNS provider like no-ip.
+# You'll also need to map ports 80 and 443 from your router to your ansible-nas server, then enable the per-app "available_externally"
+# settings.
+traefik_enabled: false
+
+# UI
+traefik_ui_available_externally: true
+traefik_dashboard_enabled: true
+
+# directories
+traefik_config_directory: "{{ homations_docker_config }}/traefik"
+traefik_ssl_storage_folder: "letsencrypt"
+
+# network
+traefik_port_http: "80"
+traefik_port_https: "443"
+traefik_port_ui: "8083"
+traefik_ui_hostname: "traefik"
+traefik_ui_ip_whitelist: "0.0.0.0/0"
+
+traefik_container_name: "traefik"
+traefik_image_name: "traefik"
+traefik_image_version: "latest"
+traefik_restart_policy: "unless-stopped"
+traefik_log_level: "INFO"
+traefik_debug_enabled: true
+
+# find the relevant name and environment variables for your DNS provider at https://go-acme.github.io/lego/dns/
+traefik_dns_provider: cloudflare
+traefik_environment_variables:
+  CF_API_TOKEN: "cloudflare_token"
+traefik_cert_resolvers:
+  dnsresolver:
+    acme:
+      email: "{{ homations_email }}"
+      storage: "/{{ traefik_ssl_storage_folder }}/acme.json"
+      caserver: "{{ traefik_acme_server }}"
+      dnsChallenge:
+        provider: "{{ traefik_dns_provider }}"
+        #disablePropagationCheck: true # uncomment this if you have issues pulling certificates through cloudflare, By setting this flag to true disables the need to wait for the propagation of the TXT record to all authoritative name servers.
+        resolvers: "{{ traefik_dns_resolver }}"
+traefik_dns_resolver:
+  - "1.1.1.1:53"
+  - "1.0.0.1:53"
+
+# Ansible-NAS requests a wildcard certificate for your domain, so there should be no reason to have to use the staging
+# letsencrypt acme server. If you do want to flip between staging/production, you might need to stop Traefik and clear
+# the "{{ docker_home }}/traefik" after changing this setting.
+#traefik_acme_server: "https://acme-staging-v02.api.letsencrypt.org/directory" # staging
+traefik_acme_server: "https://acme-v02.api.letsencrypt.org/directory" # production
+
+# specs
+traefik_memory: 1g

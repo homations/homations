@@ -1,0 +1,44 @@
+---
+- name: Start Portainer
+  when: portainer_enabled is true
+  block:
+    - name: Create Portainer Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ portainer_data_directory }}"
+
+    - name: Portainer Docker Container
+      community.docker.docker_container:
+        name: "{{ portainer_container_name }}"
+        image: "{{ portainer_image_name }}:{{ portainer_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        volumes:
+          - "{{ portainer_data_directory }}:/data:rw"
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+          - "/etc/timezone:/etc/timezone:ro"
+        networks:
+          - name: "{{ homations_traefik_network }}"
+        restart_policy: "{{ portainer_restart_policy }}"
+        # memory: "{{ portainer_memory }}"
+        labels:
+          traefik.enable: "{{ portainer_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.portainer.rule: "Host(`{{ portainer_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.portainer.entrypoints: "https"
+          traefik.http.routers.portainer.tls.certresolver: "dnsresolver"
+          traefik.http.routers.portainer.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.portainer.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.portainer.loadbalancer.server.port: "9000"
+          traefik.http.middlewares.portainer-ipwhitelist.ipwhitelist.sourcerange: "{{ portainer_ip_whitelist }}"
+          traefik.http.routers.portainer.middlewares: "portainer-ipwhitelist@docker"
+
+- name: Stop Portainer
+  when: portainer_enabled is false
+  block:
+    - name: Stop Portainer
+      community.docker.docker_container:
+        name: "{{ portainer_container_name }}"
+        state: absent

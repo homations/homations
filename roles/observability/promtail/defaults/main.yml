@@ -1,0 +1,22 @@
+---
+observability_promtail_enabled: false
+
+# directories
+observability_promtail_data_directory: "{{ homations_docker_data }}/promtail"
+observability_promtail_config_directory: "{{ homations_docker_config }}/promtail"
+
+# docker
+observability_promtail_container_name: "promtail"
+observability_promtail_image_name: "grafana/promtail"
+observability_promtail_image_version: "latest"
+observability_promtail_restart_policy: "unless-stopped"
+
+# promtail
+observability_promtail_retention_time: "30d"
+observability_promtail_scrape_interval: "15s"
+
+# specs
+observability_promtail_memory: 1g
+
+# config
+observability_loki_container_name: loki

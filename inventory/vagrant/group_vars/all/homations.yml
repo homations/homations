@@ -1,0 +1,15 @@
+homations_domain: example.com
+homations_email: example@example.com
+
+homations_docker_config: /home/vagrant/tmp
+homations_docker_data: /home/vagrant/data
+
+homations_traefik_network: proxy
+homations_internal_network: homations
+
+## Enable some applications
+traefik_enabled: true
+portainer_enabled: true
+grafana_enabled: true
+influxdb_enabled: true
+keycloak_enabled: true

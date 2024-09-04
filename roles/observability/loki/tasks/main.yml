@@ -1,0 +1,48 @@
+---
+- name: Start Loki
+  when: observability_loki_enabled is true
+  vars:
+    observability_loki_config_file_name: "loki.yml"
+    observability_loki_host_config_file_path: "{{ observability_loki_config_directory }}/{{ observability_loki_config_file_name }}"
+  block:
+    - name: Create Loki Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ observability_loki_data_directory }}"
+        - "{{ observability_loki_config_directory }}"
+
+    - name: Template loki.yml
+      ansible.builtin.template:
+        src: loki.yml.j2
+        dest: "{{ observability_loki_host_config_file_path }}"
+      register: observability_loki_template_config
+
+    - name: Loki Docker Container
+      vars:
+        observability_loki_container_config_file_path: "/etc/loki/{{ observability_loki_config_file_name }}"
+      community.docker.docker_container:
+        name: "{{ observability_loki_container_name }}"
+        image: "{{ observability_loki_image_name }}:{{ observability_loki_image_version }}"
+        image_name_mismatch: "recreate"
+        user: "1000:1000"
+        pull: true
+        volumes:
+          - "{{ observability_loki_data_directory }}:/loki:rw"
+          - "{{ observability_loki_host_config_file_path }}:{{ observability_loki_container_config_file_path }}"
+          - "/etc/timezone:/etc/timezone:ro"
+        networks:
+          - name: "{{ homations_internal_network }}"
+        restart_policy: "{{ observability_loki_restart_policy }}"
+        # memory: "{{ observability_loki_memory }}"
+        command:
+          - "--config.file={{ observability_loki_container_config_file_path }}"
+
+- name: Stop Loki
+  when: observability_loki_enabled is false
+  block:
+    - name: Stop Loki
+      community.docker.docker_container:
+        name: "{{ observability_loki_container_name }}"
+        state: absent

@@ -1,0 +1,29 @@
+---
+observability_prometheus_enabled: false
+observability_prometheus_available_externally: false
+
+# directories
+observability_prometheus_data_directory: "{{ homations_docker_data }}/prometheus"
+observability_prometheus_config_directory: "{{ homations_docker_config }}/prometheus"
+
+# network
+observability_prometheus_hostname: "prometheus"
+observability_prometheus_ip_whitelist: "0.0.0.0/0"
+
+# docker
+observability_prometheus_container_name: "prometheus"
+observability_prometheus_image_name: "prom/prometheus"
+observability_prometheus_image_version: "latest"
+observability_prometheus_restart_policy: "unless-stopped"
+
+# prometheus
+observability_prometheus_retention_time: "30d"
+observability_prometheus_scrape_interval: "15s"
+
+# specs
+observability_prometheus_memory: 1g
+
+# exporter
+observability_node_exporter_container_name: "node-exporter"
+observability_cadvisor_container_name: "cadvisor"
+observability_alertmanager_container_name: "alertmanager"

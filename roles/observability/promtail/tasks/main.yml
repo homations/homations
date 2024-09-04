@@ -1,0 +1,47 @@
+---
+- name: Start Promtail
+  when: observability_promtail_enabled is true
+  vars:
+    observability_promtail_config_file_name: "promtail.yml"
+    observability_promtail_host_config_file_path: "{{ observability_promtail_config_directory }}/{{ observability_promtail_config_file_name }}"
+  block:
+    - name: Create promtail Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ observability_promtail_data_directory }}"
+        - "{{ observability_promtail_config_directory }}"
+
+    - name: Template promtail.yml
+      ansible.builtin.template:
+        src: promtail.yml.j2
+        dest: "{{ observability_promtail_host_config_file_path }}"
+      register: observability_promtail_template_config
+
+    - name: Promtail Docker Container
+      vars:
+        observability_promtail_container_config_file_path: "/etc/promtail/{{ observability_promtail_config_file_name }}"
+      community.docker.docker_container:
+        name: "{{ observability_promtail_container_name }}"
+        image: "{{ observability_promtail_image_name }}:{{ observability_promtail_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        volumes:
+          - /var/log:/var/log
+          - /var/run/docker.sock:/var/run/docker.sock
+          - "{{ observability_promtail_host_config_file_path }}:{{ observability_promtail_container_config_file_path }}"
+        networks:
+          - name: "{{ homations_internal_network }}"
+        restart_policy: "{{ observability_promtail_restart_policy }}"
+        # memory: "{{ observability_promtail_memory }}"
+        command:
+          - "--config.file={{ observability_promtail_container_config_file_path }}"
+
+- name: Stop Promtail
+  when: observability_promtail_enabled is false
+  block:
+    - name: Stop Promtail
+      community.docker.docker_container:
+        name: "{{ observability_promtail_container_name }}"
+        state: absent

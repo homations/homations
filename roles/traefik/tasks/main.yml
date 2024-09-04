@@ -1,0 +1,60 @@
+---
+- name: Start Traefik
+  when: traefik_enabled is true
+  block:
+    - name: Create Traefik Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ traefik_config_directory }}"
+        - "{{ traefik_config_directory }}/letsencrypt"
+
+    - name: Template Traefik config.yml
+      ansible.builtin.template:
+        src: traefik.yml.j2
+        dest: "{{ traefik_config_directory }}/traefik.yml"
+      register: template_config
+
+    - name: Create the homations proxy network
+      community.docker.docker_network:
+        name: "{{ homations_traefik_network }}"
+
+    - name: Traefik Docker Container
+      community.docker.docker_container:
+        name: "{{ traefik_container_name }}"
+        image: "{{ traefik_image_name }}:{{ traefik_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        networks:
+          - name: "{{ homations_traefik_network }}"
+        ports:
+          - 80:80
+          - 443:443
+        labels:
+          traefik.enable: "{{ traefik_ui_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.traefik-ui.rule: "Host(`{{ traefik_ui_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.traefik-ui.entrypoints: "https"
+          traefik.http.routers.traefik-ui.tls.certresolver: "dnsresolver"
+          traefik.http.routers.traefik-ui.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.traefik-ui.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.middlewares.traefik-ui-ipwhitelist.ipwhitelist.sourcerange: "{{ traefik_ui_ip_whitelist }}"
+          traefik.http.routers.traefik-ui.middlewares: "traefik-ui-ipwhitelist@docker"
+          traefik.http.routers.traefik-ui.service: "api@internal"
+        volumes:
+          - "{{ traefik_config_directory }}/traefik.yml:/etc/traefik/traefik.yml:ro"
+          - "{{ traefik_config_directory }}/letsencrypt:/letsencrypt:rw"
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+        env: "{{ traefik_environment_variables }}"
+        restart_policy: "{{ traefik_restart_policy }}"
+        # memory: "{{ traefik_memory }}"
+        recreate: "{{ template_config is changed }}"
+
+- name: Stop Traefik
+  when: traefik_enabled is false
+  block:
+    - name: Stop Traefik
+      community.docker.docker_container:
+        name: "{{ traefik_container_name }}"
+        state: absent
