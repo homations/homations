@@ -1,0 +1,51 @@
+---
+- name: HOMATIONS PLAYBOOK
+  hosts: all
+  pre_tasks:
+    - name: Create the homations internal network
+      community.docker.docker_network:
+        name: "{{ homations_internal_network }}"
+  roles:
+    - role: traefik
+      tags:
+        - traefik
+    - role: keycloak/installation
+      tags:
+        - keycloak
+    - role: portainer
+      tags:
+        - portainer
+    - role: observability/alertmanager
+      tags:
+        - alertmanager
+        - observability
+    - role: observability/cadvisor
+      tags:
+        - cadvisor
+        - observability
+    - role: observability/node-exporter
+      tags:
+        - observability
+        - prometheus
+    - role: observability/prometheus
+      tags:
+        - prometheus
+        - observability
+    - role: logging/promtail
+      tags:
+        - observability
+        - logging
+    - role: logging/loki
+      tags:
+        - observability
+        - logging
+    - role: influxdb
+      tags:
+        - influxdb
+    - role: grafana/installation
+      tags:
+        - grafana
+    - role: grafana/configuration
+      tags:
+        - grafana
+        - grafana-configuration
