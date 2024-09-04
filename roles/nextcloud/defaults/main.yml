@@ -8,6 +8,14 @@ nextcloud_data_directory: "{{ homations_docker_data }}/nextcloud/data"
 nextcloud_db_data_directory: "{{ homations_docker_data }}/nextcloud/db"
 nextcloud_cache_directory: "{{ homations_docker_data }}/nextcloud/cache"
 
+# environment
+nextcloud_admin_user: "admin"
+nextcloud_admin_password: "admin"
+nextcloud_db_name: "nextcloud"
+nextcloud_db_user: "nextcloud"
+nextcloud_db_password: "nextcloud"
+nextcloud_cache_password: "redis"
+
 # network
 nextcloud_port: "80"
 nextcloud_hostname: "nextcloud"
