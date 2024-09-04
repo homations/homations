@@ -1,0 +1,48 @@
+---
+- name: Start InfluxDB
+  when: traefik_enabled is true
+  block:
+    - name: Create InfluxDB Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ influxdb_config_directory }}"
+        - "{{ influxdb_data_directory }}"
+
+    - name: InfluxDB Docker Container
+      vars:
+        homations_proxy_docker_network:
+          - name: "{{ homations_traefik_network }}"
+        homations_internal_docker_network:
+          - name: "{{ homations_internal_network }}"
+        influxdb_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if influxdb_available_externally else homations_internal_docker_network }}"
+      community.docker.docker_container:
+        name: "{{ influxdb_container_name }}"
+        image: "{{ influxdb_image_name }}:{{ influxdb_image_version }}"
+        pull: true
+        networks: "{{ influxdb_docker_network }}"
+        volumes:
+          - "{{ influxdb_config_directory }}:/etc/influxdb2"
+          - "{{ influxdb_data_directory }}:/var/lib/influxdb2"
+        env: "{{ influxdb_environment_variables }}"
+        restart_policy: "{{ influxdb_restart_policy }}"
+        # memory: "{{ influxdb_memory }}"
+        labels:
+          traefik.enable: "{{ influxdb_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
+          traefik.http.routers.influxdb.rule: "Host(`{{ influxdb_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.influxdb.entrypoints: "https"
+          traefik.http.routers.influxdb.tls.certresolver: "dnsresolver"
+          traefik.http.routers.influxdb.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.influxdb.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.influxdb.loadbalancer.server.port: "8086"
+          traefik.http.middlewares.influxdb-ipwhitelist.ipwhitelist.sourcerange: "{{ influxdb_ip_whitelist }}"
+          traefik.http.routers.influxdb.middlewares: "influxdb-ipwhitelist@docker"
+- name: Stop InfluxDB
+  when: influxdb_enabled is false
+  block:
+    - name: Stop InfluxDB
+      community.docker.docker_container:
+        name: "{{ influxdb_container_name }}"
+        state: absent

@@ -1,0 +1,28 @@
+---
+influxdb_enabled: false
+influxdb_available_externally: false
+
+# directories
+influxdb_config_directory: "{{ homations_docker_config }}/influxdb"
+influxdb_data_directory: "{{ homations_docker_data }}/influxdb"
+
+# network
+influxdb_hostname: "influxdb"
+influxdb_ip_whitelist: "0.0.0.0/0"
+
+# container
+influxdb_container_name: "influxdb"
+influxdb_image_name: "influxdb"
+influxdb_image_version: "2"
+influxdb_restart_policy: "unless-stopped"
+
+# env
+influxdb_environment_variables:
+  DOCKER_INFLUXDB_INIT_MODE: "setup"
+  DOCKER_INFLUXDB_INIT_USERNAME: "admin"
+  DOCKER_INFLUXDB_INIT_PASSWORD: "overwrite_me"
+  DOCKER_INFLUXDB_INIT_ORG: "org"
+  DOCKER_INFLUXDB_INIT_BUCKET: "bucket"
+
+# specs
+influxdb_memory: 1g
