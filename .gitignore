@@ -1,0 +1,4 @@
+.vagrant
+ansible_vault.yml
+inventory/local
+credentials
