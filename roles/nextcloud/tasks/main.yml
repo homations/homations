@@ -1,0 +1,101 @@
+---
+- name: Start Nextcloud
+  when: nextcloud_enabled is true
+  block:
+    - name: Create Nextcloud Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ nextcloud_data_directory }}"
+        - "{{ nextcloud_db_directory }}"
+
+    - name: Create Docker Network
+      docker_network:
+        name: "{{ nextcloud_intra_network_name }}"
+
+    - name: Create Redis Directories
+      when: nextcloud_chache_enabled is true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ nextcloud_cache_directory }}"
+
+    - name: Redis Docker Container
+      when: nextcloud_chache_enabled is true
+      community.docker.docker_container:
+        name: "{{ nextcloud_cache_container_name }}"
+        image: "{{ nextcloud_cache_image_name }}:{{ nextcloud_cache_image_version }}"
+        pull: true
+        volumes:
+          - "{{ nextcloud_cache_directory }}:/data"
+        networks:
+          - name: "{{ nextcloud_intra_network_name }}"
+        restart_policy: "{{ nextcloud_cache_restart_policy }}"
+        # memory: "{{ nextcloud_cache_memory }}"
+
+    - name: Postgres Docker Container
+      community.docker.docker_container:
+        name: "{{ nextcloud_db_container_name }}"
+        image: "{{ nextcloud_db_image_name }}:{{ nextcloud_db_image_version }}"
+        pull: true
+        volumes:
+          - "{{ nextcloud_db_directory }}:/var/lib/postgresql/data"
+        networks:
+          - name: "{{ nextcloud_intra_network_name }}"
+        restart_policy: "{{ nextcloud_db_restart_policy }}"
+        # memory: "{{ nextcloud_db_memory }}"
+
+    - name: Nextcloud Docker Container
+      vars:
+          homations_proxy_docker_network:
+            - name: "{{ homations_traefik_network }}"
+          homations_internal_docker_network:
+            - name: "{{ homations_internal_network }}"
+          nextcloud_intra_network:
+            - name: "{{ nextcloud_intra_network_name }}"
+          nextcloud_docker_network: "{{ nextcloud_intra_network + homations_internal_docker_network + homations_proxy_docker_network if nextcloud_available_externally else nextcloud_intra_network + homations_internal_docker_network }}"
+      community.docker.docker_container:
+        name: "{{ nextcloud_container_name }}"
+        image: "{{ nextcloud_image_name }}:{{ nextcloud_image_version }}"
+        pull: true
+        volumes:
+          - "{{ nextcloud_data_directory }}:/var/www/html"
+        restart_policy: "{{ nextcloud_restart_policy }}"
+        networks:
+          - name: "{{ nextcloud_docker_network }}"
+        # memory: "{{ nextcloud_memory }}"
+        labels:
+          traefik.enable: "{{ nextcloud_available_externally | string }}"
+          traefik.http.routers.nextcloud.rule: "Host(`{{ nextcloud_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.nextcloud.tls.certresolver: "dnsresolver"
+          traefik.http.routers.nextcloud.tls.domains[0].main: "{{ homations_domain }}"
+          traefik.http.routers.nextcloud.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.services.nextcloud.loadbalancer.server.port: "{{ nextcloud_port }}"
+          traefik.http.middlewares.nextcloud-ipwhitelist.ipwhitelist.sourcerange: "{{ nextcloud_ip_whitelist }}"
+          traefik.http.routers.nextcloud.middlewares: "nextcloud-ipwhitelist@docker"
+
+- name: Stop Nextcloud Stack
+  when: nextcloud_enabled is false
+  block:
+    - name: Stop Redis
+      community.docker.docker_container:
+        name: "{{ nextcloud_cache_container_name }}"
+        state: absent
+
+    - name: Stop Postgres
+      community.docker.docker_container:
+        name: "{{ nextcloud_db_container_name }}"
+        state: absent
+
+    - name: Stop Nextcloud
+      community.docker.docker_container:
+        name: "{{ nextcloud_container_name }}"
+        state: absent
+
+    - name: Delete Docker Network
+      docker_network:
+        name: "{{ nextcloud_intra_network_name }}"
+        state: absent
+        force: yes
