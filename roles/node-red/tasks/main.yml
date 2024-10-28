@@ -9,6 +9,16 @@
       with_items:
         - "{{ node_red_data_directory }}"
 
+    - name: Create the Node-RED Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ node_red_volume_name }}"
+        driver: local
+        driver_options:
+          type: none
+          device: "{{ node_red_data_directory }}"
+          o: bind
+
     - name: Node-RED Docker Container
       vars:
         homations_proxy_docker_network:
@@ -16,6 +26,7 @@
         homations_internal_docker_network:
           - name: "{{ homations_internal_network }}"
         node_red_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if node_red_available_externally else homations_internal_docker_network }}"
+        node_red_volume_spec: "{{ node_red_volume_name if (homations_docker_volume_enabled) else node_red_data_directory }}"
         node_red_traefik_middleware_list_allowlist: ["nodered-ipallowlist"]
         node_red_traefik_middleware_list_forwardauth: "{{ ['nodered-basicauth'] if (node_red_basicauth_enabled) else [] }}"
         node_red_traefik_middleware_list: "{{ node_red_traefik_middleware_list_allowlist + node_red_traefik_middleware_list_forwardauth }}"
@@ -27,7 +38,7 @@
         env: TZ={{ homations_timezone }}
         networks: "{{ node_red_docker_network }}"
         volumes:
-          - "{{ node_red_data_directory }}:/data:rw"
+          - "{{ node_red_volume_spec }}:/data:rw"
         restart_policy: "{{ node_red_restart_policy }}"
         # memory: "{{ node_red_memory }}"
         labels:
