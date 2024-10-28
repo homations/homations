@@ -10,6 +10,12 @@
         - "{{ node_red_data_directory }}"
 
     - name: Node-RED Docker Container
+      vars:
+        homations_proxy_docker_network:
+          - name: "{{ homations_traefik_network }}"
+        homations_internal_docker_network:
+          - name: "{{ homations_internal_network }}"
+        node_red_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if node_red_available_externally else homations_internal_docker_network }}"
       community.docker.docker_container:
         name: "{{ node_red_container_name }}"
         image: "{{ node_red_image_name }}:{{ node_red_image_version }}"
