@@ -20,6 +20,7 @@
       community.docker.docker_container:
         name: "{{ influxdb_container_name }}"
         image: "{{ influxdb_image_name }}:{{ influxdb_image_version }}"
+        image_name_mismatch: "recreate"
         pull: true
         networks: "{{ influxdb_docker_network }}"
         volumes:
@@ -39,6 +40,7 @@
           traefik.http.services.influxdb.loadbalancer.server.port: "8086"
           traefik.http.middlewares.influxdb-ipallowlist.ipallowlist.sourcerange: "{{ influxdb_ip_allowlist }}"
           traefik.http.routers.influxdb.middlewares: "influxdb-ipallowlist@docker"
+
 - name: Stop InfluxDB
   when: influxdb_enabled is false
   block:
