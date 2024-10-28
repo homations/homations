@@ -8,7 +8,7 @@ observability_prometheus_config_directory: "{{ homations_docker_config }}/promet
 
 # network
 observability_prometheus_hostname: "prometheus"
-observability_prometheus_ip_whitelist: "0.0.0.0/0"
+observability_prometheus_ip_allowlist: "0.0.0.0/0"
 
 # docker
 observability_prometheus_container_name: "prometheus"

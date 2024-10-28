@@ -32,8 +32,8 @@
           traefik.http.routers.portainer.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.portainer.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.portainer.loadbalancer.server.port: "9000"
-          traefik.http.middlewares.portainer-ipwhitelist.ipwhitelist.sourcerange: "{{ portainer_ip_whitelist }}"
-          traefik.http.routers.portainer.middlewares: "portainer-ipwhitelist@docker"
+          traefik.http.middlewares.portainer-ipallowlist.ipallowlist.sourcerange: "{{ portainer_ip_allowlist }}"
+          traefik.http.routers.portainer.middlewares: "portainer-ipallowlist@docker"
 
 - name: Stop Portainer
   when: portainer_enabled is false

@@ -13,3 +13,4 @@ portainer_enabled: true
 grafana_enabled: true
 influxdb_enabled: true
 keycloak_enabled: true
+nextcloud_enabled: true

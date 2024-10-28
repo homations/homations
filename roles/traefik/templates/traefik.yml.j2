@@ -3,6 +3,12 @@ api:
   insecure: false
   dashboard: {{ traefik_dashboard_enabled }}
   debug: {{ traefik_debug_enabled }}
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+metrics:
+  prometheus:
+    addRoutersLabels: true
 entryPoints:
   http:
     address: ":{{ traefik_port_http }}"

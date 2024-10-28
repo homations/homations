@@ -37,8 +37,8 @@
           traefik.http.routers.influxdb.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.influxdb.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.influxdb.loadbalancer.server.port: "8086"
-          traefik.http.middlewares.influxdb-ipwhitelist.ipwhitelist.sourcerange: "{{ influxdb_ip_whitelist }}"
-          traefik.http.routers.influxdb.middlewares: "influxdb-ipwhitelist@docker"
+          traefik.http.middlewares.influxdb-ipallowlist.ipallowlist.sourcerange: "{{ influxdb_ip_allowlist }}"
+          traefik.http.routers.influxdb.middlewares: "influxdb-ipallowlist@docker"
 - name: Stop InfluxDB
   when: influxdb_enabled is false
   block:

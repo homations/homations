@@ -8,12 +8,12 @@ portainer_data_directory: "{{ homations_docker_data }}/portainer"
 # network
 portainer_port: "9443"
 portainer_hostname: "portainer"
-portainer_ip_whitelist: "0.0.0.0/0"
+portainer_ip_allowlist: "0.0.0.0/0"
 
 # docker
 portainer_container_name: "portainer"
 portainer_image_name: "portainer/portainer-ce"
-portainer_image_version: "latest"
+portainer_image_version: "2.21.4"
 portainer_restart_policy: "unless-stopped"
 
 # specs
