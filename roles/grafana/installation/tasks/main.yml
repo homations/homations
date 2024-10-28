@@ -51,8 +51,8 @@
           traefik.http.routers.grafana.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.grafana.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.grafana.loadbalancer.server.port: "3000"
-          traefik.http.middlewares.grafana-ipwhitelist.ipwhitelist.sourcerange: "{{ grafana_ip_whitelist }}"
-          traefik.http.routers.grafana.middlewares: "grafana-ipwhitelist@docker"
+          traefik.http.middlewares.grafana-ipallowlist.ipallowlist.sourcerange: "{{ grafana_ip_allowlist }}"
+          traefik.http.routers.grafana.middlewares: "grafana-ipallowlist@docker"
 
 - name: Stop Grafana
   when: grafana_enabled is false

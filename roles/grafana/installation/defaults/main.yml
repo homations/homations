@@ -10,7 +10,7 @@ grafana_config_directory: "{{ homations_docker_config }}/grafana"
 
 # network
 grafana_hostname: "grafana"
-grafana_ip_whitelist: "0.0.0.0/0"
+grafana_ip_allowlist: "0.0.0.0/0"
 
 # docker
 grafana_container_name: "grafana"
