@@ -15,6 +15,7 @@ node_red_container_name: "nodered"
 node_red_image_name: "nodered/node-red"
 node_red_image_version: "4.0.5"
 node_red_restart_policy: "unless-stopped"
+node_red_volume_name: "{{ node_red_container_name }}_data"
 
 # specs
 node_red_memory: 1g
