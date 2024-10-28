@@ -3,7 +3,6 @@ keycloak_enabled: false
 keycloak_available_externally: true
 
 # directories
-keycloak_data_directory: "{{ homations_docker_data }}/keycloak/server"
 keycloak_config_directory: "{{ homations_docker_config }}/keycloak"
 
 # network
@@ -17,6 +16,7 @@ keycloak_image_name: "quay.io/keycloak/keycloak"
 keycloak_image_version: "24.0.1"
 keycloak_custom_image_name: "kunipas-keycloak"
 keycloak_log_level: "INFO"
+keycloak_volume_name: "{{ keycloak_container_name }}_data"
 
 # environment
 keycloak_admin_username: admin
@@ -48,6 +48,7 @@ keycloak_database_type: postgres
 keycloak_database_user: keycloak
 keycloak_database_password: keycloak
 keycloak_database_db: keycloak
+keycloak_database_volume_name: "{{ keycloak_database_container_name }}_data"
 
 keycloak_database_environment_variables:
   POSTGRES_USER: "{{ keycloak_database_user }}"

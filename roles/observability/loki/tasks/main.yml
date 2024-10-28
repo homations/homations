@@ -13,6 +13,16 @@
         - "{{ observability_loki_data_directory }}"
         - "{{ observability_loki_config_directory }}"
 
+    - name: Create the Loki Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ observability_loki_volume_name }}"
+        driver: local
+        driver_options:
+          type: none
+          device: "{{ observability_loki_data_directory }}"
+          o: bind
+
     - name: Template loki.yml
       ansible.builtin.template:
         src: loki.yml.j2
@@ -22,6 +32,7 @@
     - name: Loki Docker Container
       vars:
         observability_loki_container_config_file_path: "/etc/loki/{{ observability_loki_config_file_name }}"
+        observability_loki_volume_spec: "{{ observability_loki_volume_name if (homations_docker_volume_enabled) else observability_loki_data_directory }}"
       community.docker.docker_container:
         name: "{{ observability_loki_container_name }}"
         image: "{{ observability_loki_image_name }}:{{ observability_loki_image_version }}"
@@ -29,7 +40,7 @@
         user: "1000:1000"
         pull: true
         volumes:
-          - "{{ observability_loki_data_directory }}:/loki:rw"
+          - "{{ observability_loki_volume_spec }}:/loki:rw"
           - "{{ observability_loki_host_config_file_path }}:{{ observability_loki_container_config_file_path }}"
           - "/etc/timezone:/etc/timezone:ro"
         networks:
@@ -45,4 +56,10 @@
     - name: Stop Loki
       community.docker.docker_container:
         name: "{{ observability_loki_container_name }}"
+        state: absent
+
+    - name: Remove the Loki Docker Volume
+      when: homations_docker_volume_enabled
+      community.docker.docker_volume:
+        name: "{{ observability_loki_volume_name }}"
         state: absent

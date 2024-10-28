@@ -3,6 +3,7 @@ homations_email: example@example.com
 
 homations_docker_config: /home/vagrant/tmp
 homations_docker_data: /home/vagrant/data
+homations_docker_volume_enabled: false
 
 homations_traefik_network: proxy
 homations_internal_network: homations

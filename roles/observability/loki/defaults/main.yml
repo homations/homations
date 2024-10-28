@@ -10,6 +10,7 @@ observability_loki_container_name: "loki"
 observability_loki_image_name: "grafana/loki"
 observability_loki_image_version: "latest"
 observability_loki_restart_policy: "unless-stopped"
+observability_loki_volume_name: "{{ observability_loki_container_name }}_data"
 
 # loki
 observability_loki_retention_time: "30d"

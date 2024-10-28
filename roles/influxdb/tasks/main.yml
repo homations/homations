@@ -10,6 +10,16 @@
         - "{{ influxdb_config_directory }}"
         - "{{ influxdb_data_directory }}"
 
+    - name: Create the InfluxDB Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ influxdb_volume_name }}"
+        driver: local
+        driver_options:
+          type: none
+          device: "{{ influxdb_data_directory }}"
+          o: bind
+
     - name: InfluxDB Docker Container
       vars:
         homations_proxy_docker_network:
@@ -17,6 +27,7 @@
         homations_internal_docker_network:
           - name: "{{ homations_internal_network }}"
         influxdb_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if influxdb_available_externally else homations_internal_docker_network }}"
+        influxdb_volume_spec: "{{ influxdb_volume_name if (homations_docker_volume_enabled) else influxdb_data_directory }}"
       community.docker.docker_container:
         name: "{{ influxdb_container_name }}"
         image: "{{ influxdb_image_name }}:{{ influxdb_image_version }}"
@@ -24,7 +35,7 @@
         networks: "{{ influxdb_docker_network }}"
         volumes:
           - "{{ influxdb_config_directory }}:/etc/influxdb2"
-          - "{{ influxdb_data_directory }}:/var/lib/influxdb2"
+          - "{{ influxdb_volume_spec }}:/var/lib/influxdb2"
         env: "{{ influxdb_environment_variables }}"
         restart_policy: "{{ influxdb_restart_policy }}"
         # memory: "{{ influxdb_memory }}"
@@ -45,4 +56,10 @@
     - name: Stop InfluxDB
       community.docker.docker_container:
         name: "{{ influxdb_container_name }}"
+        state: absent
+
+    - name: Remove the InfluxDB Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ influxdb_volume_name }}"
         state: absent

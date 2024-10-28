@@ -9,14 +9,26 @@
       with_items:
         - "{{ portainer_data_directory }}"
 
+    - name: Create the Portainer Docker Volume
+      when: homations_docker_volume_enabled is true
+      community.docker.docker_volume:
+        name: "{{ portainer_volume_name }}"
+        driver: local
+        driver_options:
+          type: none
+          device: "{{ portainer_data_directory }}"
+          o: bind
+
     - name: Portainer Docker Container
+      vars:
+        portainer_volume_spec: "{{ portainer_volume_name if (homations_docker_volume_enabled) else portainer_data_directory }}"
       community.docker.docker_container:
         name: "{{ portainer_container_name }}"
         image: "{{ portainer_image_name }}:{{ portainer_image_version }}"
         image_name_mismatch: "recreate"
         pull: true
         volumes:
-          - "{{ portainer_data_directory }}:/data:rw"
+          - "{{ portainer_volume_spec }}:/data:rw"
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
           - "/etc/timezone:/etc/timezone:ro"
         networks:
@@ -41,4 +53,10 @@
     - name: Stop Portainer
       community.docker.docker_container:
         name: "{{ portainer_container_name }}"
+        state: absent
+
+    - name: Remove the Portainer Docker Volume
+      when: homations_docker_volume_enabled
+      community.docker.docker_volume:
+        name: "{{ portainer_volume_name }}"
         state: absent
