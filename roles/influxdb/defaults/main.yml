@@ -13,7 +13,7 @@ influxdb_ip_allowlist: "0.0.0.0/0"
 # container
 influxdb_container_name: "influxdb"
 influxdb_image_name: "influxdb"
-influxdb_image_version: "2"
+influxdb_image_version: "2.7.10"
 influxdb_restart_policy: "unless-stopped"
 influxdb_volume_name: "{{ influxdb_container_name }}_data"
 
@@ -24,6 +24,9 @@ influxdb_environment_variables:
   DOCKER_INFLUXDB_INIT_PASSWORD: "overwrite_me"
   DOCKER_INFLUXDB_INIT_ORG: "org"
   DOCKER_INFLUXDB_INIT_BUCKET: "bucket"
+  INFLUXD_PPROF_DISABLED: "false"
+  INFLUXD_METRICS_DISABLED: "false"
+  INFLUXD_UI_DISABLED: "false"
 
 # specs
 influxdb_memory: 1g
