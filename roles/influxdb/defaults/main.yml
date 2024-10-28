@@ -13,7 +13,7 @@ influxdb_ip_allowlist: "0.0.0.0/0"
 # container
 influxdb_container_name: "influxdb"
 influxdb_image_name: "influxdb"
-influxdb_image_version: "2"
+influxdb_image_version: "2.7.10"
 influxdb_restart_policy: "unless-stopped"
 
 # env
