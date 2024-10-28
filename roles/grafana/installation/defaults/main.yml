@@ -15,7 +15,7 @@ grafana_ip_whitelist: "0.0.0.0/0"
 # docker
 grafana_container_name: "grafana"
 grafana_image_name: "grafana/grafana"
-grafana_image_version: "latest"
+grafana_image_version: "11.3.0"
 grafana_restart_policy: "unless-stopped"
 
 # specs
