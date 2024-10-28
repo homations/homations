@@ -16,6 +16,9 @@
         homations_internal_docker_network:
           - name: "{{ homations_internal_network }}"
         node_red_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if node_red_available_externally else homations_internal_docker_network }}"
+        node_red_traefik_middleware_list_allowlist: ["nodered-ipallowlist"]
+        node_red_traefik_middleware_list_forwardauth: "{{ ['nodered-basicauth'] if (node_red_basicauth_enabled) else [] }}"
+        node_red_traefik_middleware_list: "{{ node_red_traefik_middleware_list_allowlist + node_red_traefik_middleware_list_forwardauth }}"
       community.docker.docker_container:
         name: "{{ node_red_container_name }}"
         image: "{{ node_red_image_name }}:{{ node_red_image_version }}"
@@ -29,13 +32,17 @@
         # memory: "{{ node_red_memory }}"
         labels:
           traefik.enable: "{{ node_red_available_externally | string }}"
+          traefik.docker.network: "{{ homations_traefik_network }}"
           traefik.http.routers.nodered.rule: "Host(`{{ node_red_hostname }}.{{ homations_domain }}`)"
+          traefik.http.routers.nodered.entrypoints: "https"
           traefik.http.routers.nodered.tls.certresolver: "dnsresolver"
           traefik.http.routers.nodered.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.nodered.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.nodered.loadbalancer.server.port: "1880"
+          traefik.http.middlewares.nodered-chain.chain.middlewares: "{{ node_red_traefik_middleware_list | join(', ') }}"
           traefik.http.middlewares.nodered-ipallowlist.ipallowlist.sourcerange: "{{ node_red_ip_allowlist }}"
-          traefik.http.routers.nodered.middlewares: "nodered-ipallowlist@docker"
+          traefik.http.middlewares.nodered-basicauth.basicauth.users: "{{ node_red_basicauth_htpasswd }}"
+          traefik.http.routers.nodered.middlewares: "nodered-chain"
 
 - name: Stop Node-RED
   when: node_red_enabled is false
