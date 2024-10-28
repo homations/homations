@@ -49,8 +49,8 @@
           traefik.http.routers.alertmanager.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.alertmanager.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.alertmanager.loadbalancer.server.port: "9093"
-          traefik.http.middlewares.alertmanager-ipwhitelist.ipwhitelist.sourcerange: "{{ observability_alertmanager_ip_whitelist }}"
-          traefik.http.routers.alertmanager.middlewares: "alertmanager-ipwhitelist@docker"
+          traefik.http.middlewares.alertmanager-ipallowlist.ipallowlist.sourcerange: "{{ observability_alertmanager_ip_allowlist }}"
+          traefik.http.routers.alertmanager.middlewares: "alertmanager-ipallowlist@docker"
         command:
           - "--config.file={{ observability_alertmanager_container_config_file_path }}"
 

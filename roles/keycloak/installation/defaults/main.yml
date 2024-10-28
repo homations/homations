@@ -9,7 +9,7 @@ keycloak_config_directory: "{{ homations_docker_config }}/keycloak"
 # network
 keycloak_port: "8080"
 keycloak_hostname: "keycloak"
-keycloak_ip_whitelist: "0.0.0.0/0"
+keycloak_ip_allowlist: "0.0.0.0/0"
 
 # docker
 keycloak_container_name: "keycloak"

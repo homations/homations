@@ -8,7 +8,7 @@ influxdb_data_directory: "{{ homations_docker_data }}/influxdb"
 
 # network
 influxdb_hostname: "influxdb"
-influxdb_ip_whitelist: "0.0.0.0/0"
+influxdb_ip_allowlist: "0.0.0.0/0"
 
 # container
 influxdb_container_name: "influxdb"

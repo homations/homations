@@ -49,8 +49,8 @@
           traefik.http.routers.prometheus.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.prometheus.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.prometheus.loadbalancer.server.port: "9090"
-          traefik.http.middlewares.prometheus-ipwhitelist.ipwhitelist.sourcerange: "{{ observability_prometheus_ip_whitelist }}"
-          traefik.http.routers.prometheus.middlewares: "prometheus-ipwhitelist@docker"
+          traefik.http.middlewares.prometheus-ipallowlist.ipallowlist.sourcerange: "{{ observability_prometheus_ip_allowlist }}"
+          traefik.http.routers.prometheus.middlewares: "prometheus-ipallowlist@docker"
         command:
           - "--storage.tsdb.retention.time={{ observability_prometheus_retention_time }}"
           - "--config.file={{ observability_prometheus_container_config_file_path }}"
