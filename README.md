@@ -33,13 +33,13 @@ run common applications for your home server.
 
 ### Others
 * [Portainer](https://www.portainer.io/) - Portainer is your container management software to deploy, troubleshoot, and secure applications across cloud, datacenter, and Industrial IoT use cases.
+* [Node-RED](https://nodered.org/) - Low-code programming for event-driven applications. 
 
 ### Planned
 * [Bind9](https://bind9.net/) - BIND 9 has evolved to be a very flexible, full-featured DNS system.
 * [MikroTik RouterOS](https://mikrotik.com/software) - RouterOS is the operating system of RouterBOARD of MikroTik network equipment.
 * [Netbox](https://netboxlabs.com/docs/netbox/en/stable/) - NetBox is the leading solution for modeling and documenting modern networks. 
 * [Nextcloud](https://nextcloud.com/) - Nextcloud server, a safe home for all your data.
-* [Node-RED](https://nodered.org/) - Low-code programming for event-driven applications. 
 
 ## Requirements
 
