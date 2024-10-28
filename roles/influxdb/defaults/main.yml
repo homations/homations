@@ -23,6 +23,9 @@ influxdb_environment_variables:
   DOCKER_INFLUXDB_INIT_PASSWORD: "overwrite_me"
   DOCKER_INFLUXDB_INIT_ORG: "org"
   DOCKER_INFLUXDB_INIT_BUCKET: "bucket"
+  INFLUXD_PPROF_DISABLED: "false"
+  INFLUXD_METRICS_DISABLED: "false"
+  INFLUXD_UI_DISABLED: "false"
 
 # specs
 influxdb_memory: 1g
