@@ -26,16 +26,15 @@
     - role: observability/node-exporter
       tags:
         - observability
-        - prometheus
     - role: observability/prometheus
       tags:
         - prometheus
         - observability
-    - role: logging/promtail
+    - role: observability/promtail
       tags:
         - observability
         - logging
-    - role: logging/loki
+    - role: observability/loki
       tags:
         - observability
         - logging
@@ -45,7 +44,6 @@
     - role: grafana/installation
       tags:
         - grafana
-    - role: grafana/configuration
+    - role: node-red
       tags:
-        - grafana
-        - grafana-configuration
+        - node-red
