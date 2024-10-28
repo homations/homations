@@ -1,39 +1,40 @@
 ---
 - name: Start Node-RED
-  when: nodered_enabled is true
+  when: node_red_enabled is true
   block:
     - name: Create Node-RED Directories
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
       with_items:
-        - "{{ nodered_data_directory }}"
+        - "{{ node_red_data_directory }}"
 
     - name: Node-RED Docker Container
       community.docker.docker_container:
-        name: "{{ nodered_container_name }}"
-        image: "{{ nodered_image_name }}:{{ nodered_image_version }}"
+        name: "{{ node_red_container_name }}"
+        image: "{{ node_red_image_name }}:{{ node_red_image_version }}"
+        image_name_mismatch: "recreate"
         pull: true
-        environment:
-          - TZ=Europe/Berlin
+        env: TZ={{ homations_timezone }}
+        networks: "{{ node_red_docker_network }}"
         volumes:
-          - "{{ nodered_data_directory }}:/data:rw"
-        restart_policy: "{{ nodered_restart_policy }}"
-        # memory: "{{ nodered_memory }}"
+          - "{{ node_red_data_directory }}:/data:rw"
+        restart_policy: "{{ node_red_restart_policy }}"
+        # memory: "{{ node_red_memory }}"
         labels:
-          traefik.enable: "{{ nodered_available_externally | string }}"
-          traefik.http.routers.nodered.rule: "Host(`{{ nodered_hostname }}.{{ homations_domain }}`)"
+          traefik.enable: "{{ node_red_available_externally | string }}"
+          traefik.http.routers.nodered.rule: "Host(`{{ node_red_hostname }}.{{ homations_domain }}`)"
           traefik.http.routers.nodered.tls.certresolver: "dnsresolver"
           traefik.http.routers.nodered.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.nodered.tls.domains[0].sans: "*.{{ homations_domain }}"
           traefik.http.services.nodered.loadbalancer.server.port: "1880"
-          traefik.http.middlewares.nodered-ipwhitelist.ipwhitelist.sourcerange: "{{ nodered_ip_whitelist }}"
-          traefik.http.routers.nodered.middlewares: "nodered-ipwhitelist@docker"
+          traefik.http.middlewares.nodered-ipallowlist.ipallowlist.sourcerange: "{{ node_red_ip_allowlist }}"
+          traefik.http.routers.nodered.middlewares: "nodered-ipallowlist@docker"
 
 - name: Stop Node-RED
-  when: nodered_enabled is false
+  when: node_red_enabled is false
   block:
     - name: Stop Node-RED
       community.docker.docker_container:
-        name: "{{ nodered_container_name }}"
+        name: "{{ node_red_container_name }}"
         state: absent
