@@ -1,0 +1,23 @@
+{% if homations_domain == "traefik.me" %}
+    {% for item in bind9_dns_entries %}
+        {% if bind9_dns_entries[item] is true %}
+
+zone "{{ item }}.{{ homations_domain }}" {
+    type master;
+    file "/etc/bind/db.{{ item }}.{{ homations_domain }}";
+};
+        {% endif %}
+    {% endfor %}
+{% else %}
+
+zone "{{ homations_domain }}" {
+    type master;
+    file "/etc/bind/db.{{ homations_domain }}";
+};
+{% endif %}
+
+{% if bind9_additional_zones is defined and bind9_additional_zones != "" %}
+
+{{ bind9_additional_zones }}
+
+{% endif %}
