@@ -7,14 +7,18 @@
   block:
     - name: Create Prometheus Config Directories
       ansible.builtin.file:
-        path: "{{ observability_prometheus_config_directory }}"
+        path: "{{ item }}"
         state: directory
+      with_items:
+        - "{{ observability_prometheus_config_directory }}"
+        - "{{ observability_prometheus_data_directory }}"
 
     - name: Create Prometheus Data Directories
-      become: true
-      vars: 
-        owner: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
-        group: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
+      when: homations_change_volume_type is true and homations_docker_volume_enabled is true
+      become: "{{ homations_change_volume_type }}"
+      vars:
+        owner: "{{ 'nobody' if (homations_docker_volume_enabled) else '1000' }}"
+        group: "{{ 'nobody' if (homations_docker_volume_enabled) else '1000' }}"
       ansible.builtin.file:
         path: "{{ observability_prometheus_data_directory }}"
         owner: "{{ owner }}"

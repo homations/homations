@@ -5,16 +5,20 @@
     observability_alertmanager_config_file_name: "alertmanager.yml"
     observability_alertmanager_host_config_file_path: "{{ observability_alertmanager_config_directory }}/{{ observability_alertmanager_config_file_name }}"
   block:
-    - name: Create Alertmanager Config Directories
+    - name: Create Alertmanager Directories
       ansible.builtin.file:
-        path: "{{ observability_alertmanager_config_directory }}"
+        path: "{{ item }}"
         state: directory
+      with_items:
+        - "{{ observability_alertmanager_config_directory }}"
+        - "{{ observability_alertmanager_data_directory }}"
 
     - name: Create Alertmanager Data Directories
+      when: homations_change_volume_type is true and homations_docker_volume_enabled is true
       become: true
-      vars: 
-        owner: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
-        group: "{{'nobody' if (homations_docker_volume_enabled) else '1000'}}"
+      vars:
+        owner: "{{ 'nobody' if (homations_docker_volume_enabled) else '1000' }}"
+        group: "{{ 'nobody' if (homations_docker_volume_enabled) else '1000' }}"
       ansible.builtin.file:
         path: "{{ observability_alertmanager_data_directory }}"
         owner: "{{ owner }}"
