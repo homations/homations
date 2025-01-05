@@ -33,6 +33,8 @@
           - "{{ observability_promtail_host_config_file_path }}:{{ observability_promtail_container_config_file_path }}"
         networks:
           - name: "{{ homations_internal_network }}"
+        ports:
+          - "1514:1514"
         restart_policy: "{{ observability_promtail_restart_policy }}"
         # memory: "{{ observability_promtail_memory }}"
         command:
