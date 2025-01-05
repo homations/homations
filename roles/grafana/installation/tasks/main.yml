@@ -2,8 +2,8 @@
 - name: Start Grafana
   when: grafana_enabled is true
   vars:
-    grafana_config_file_name: "grafana.ini"
-    grafana_host_config_file_path: "{{ grafana_config_directory }}/{{ grafana_config_file_name }}"
+    grafana_host_config_file_path: "{{ grafana_config_directory }}/grafana.ini"
+    grafana_datasources_config_file_path: "{{ grafana_config_directory }}/datasources.yml"
   block:
     - name: Create grafana Directories
       ansible.builtin.file:
@@ -13,11 +13,17 @@
         - "{{ grafana_data_directory }}"
         - "{{ grafana_config_directory }}"
 
-    - name: Template grafana.yml
+    - name: Template grafana.ini
       ansible.builtin.template:
         src: grafana.ini.j2
         dest: "{{ grafana_host_config_file_path }}"
-      register: grafana_template_config
+      register: grafana_ini_template_config
+
+    - name: Template datasources
+      ansible.builtin.template:
+        src: datasources.yml.j2
+        dest: "{{ grafana_datasources_config_file_path }}"
+      register: grafana_datasources_template_config
 
     - name: Create the Grafana Docker Volume
       when: homations_docker_volume_enabled is true
@@ -37,6 +43,7 @@
           - name: "{{ homations_internal_network }}"
         grafana_docker_network: "{{ homations_internal_docker_network + homations_proxy_docker_network if grafana_available_externally else homations_internal_docker_network }}"
         grafana_volume_spec: "{{ grafana_volume_name if (homations_docker_volume_enabled) else grafana_data_directory }}"
+        grafana_restart: "{{ 'True' if (grafana_datasources_template_config.changed) else 'False' }}"
       community.docker.docker_container:
         name: "{{ grafana_container_name }}"
         image: "{{ grafana_image_name }}:{{ grafana_image_version }}"
@@ -47,8 +54,10 @@
         volumes:
           - "{{ grafana_volume_spec }}:/var/lib/grafana:rw"
           - "{{ grafana_host_config_file_path }}:/etc/grafana/grafana.ini"
+          - "{{ grafana_datasources_config_file_path }}:/etc/grafana/provisioning/datasources/datasources.yml"
           - "/etc/timezone:/etc/timezone:ro"
         networks: "{{ grafana_docker_network }}"
+        restart: "{{ grafana_restart }}"
         restart_policy: "{{ grafana_restart_policy }}"
         # memory: "{{ grafana_memory }}"
         labels:
