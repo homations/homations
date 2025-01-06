@@ -21,7 +21,9 @@ entryPoints:
     address: ":{{ traefik_port_https }}"
     http:
       tls:
+{% if homations_domain != "traefik.me" %}
         certResolver: "{{ traefik_dns_provider }}"
+{% endif %}
         domains:
           main: "{{ homations_domain }}"
           sans: 
@@ -31,10 +33,14 @@ entryPoints:
 serversTransport:
   insecureSkipVerify: true
 providers:
+{% if homations_domain == "traefik.me" %}
+  file: 
+    filename: /etc/traefik/tls.yml
+{% endif %}
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-  # file:
-  #   filename: /config.yml
+{% if homations_domain != "traefik.me" %}
 certificatesResolvers: 
   {{ traefik_cert_resolvers | to_yaml(indent=4) }}
+{% endif %}

@@ -1,0 +1,30 @@
+- name: Create Traefik certs Directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ traefik_config_directory }}/certs"
+
+- name: Template Traefik tls.yml
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ traefik_config_directory }}/{{ item }}"
+  register: template_config
+  with_items:
+    - "tls.yml"
+
+- name: Download traefik.me certificate data
+  ansible.builtin.get_url:
+    url: "https://traefik.me/{{ item }}"
+    dest: "{{ role_path }}/files/{{ item }}"
+  with_items:
+    - "cert.pem"
+    - "privkey.pem"
+
+- name: Copy certificate data
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ traefik_config_directory }}/certs/{{ item }}"
+  with_items:
+    - "cert.pem"
+    - "privkey.pem"
