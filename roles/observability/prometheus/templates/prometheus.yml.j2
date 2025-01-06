@@ -14,6 +14,16 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['{{ traefik_container_name }}:{{ traefik_port_ui }}']
+
+{% if observability_bind_exporter_enabled is defined and observability_bind_exporter_enabled %}
+  - job_name: 'bind-exporter'
+    static_configs:
+      - targets: ['{{ observability_bind_exporter_container_name }}:9119']
+{% endif %}
+
 {% if observability_cadvisor_enabled is defined and observability_cadvisor_enabled %}
   - job_name: 'cadvisor'
     static_configs:
@@ -24,4 +34,28 @@ scrape_configs:
   - job_name: 'node-exporter'
     static_configs:
       - targets: ['{{ observability_node_exporter_container_name }}:9100']
+{% endif %}
+
+{% if observability_mktxp_exporter_enabled is defined and observability_mktxp_exporter_enabled %}
+  - job_name: 'mktxp'
+    static_configs:
+      - targets: ['{{ observability_mktxp_exporter_container_name }}:49090']
+{% endif %}
+
+{% if observability_loki_enabled is defined and observability_loki_enabled %}
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['{{ observability_loki_container_name }}:3100']
+{% endif %}
+
+{% if observability_promtail_enabled is defined and observability_promtail_enabled %}
+  - job_name: 'promtail'
+    static_configs:
+      - targets: ['{{ observability_promtail_container_name }}:9080']
+{% endif %}
+
+{% if influxdb_enabled is defined and influxdb_enabled %}
+  - job_name: 'influxdb'
+    static_configs:
+      - targets: ['{{ influxdb_container_name }}:8086']
 {% endif %}
