@@ -2,3 +2,4 @@
 ansible_vault.yml
 inventory/local
 credentials
+roles/traefik/files/*
