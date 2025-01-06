@@ -1,0 +1,18 @@
+---
+# monitoring
+observability_prometheus_enabled: true
+observability_alertmanager_enabled: true
+
+observability_prometheus_available_externally: true
+observability_alertmanager_available_externally: true
+
+# exporter
+observability_bind_exporter_enabled: true
+observability_cadvisor_enabled: true
+observability_node_exporter_enabled: true
+observability_mktxp_exporter_enabled: true
+
+# logging
+observability_loki_enabled: true
+observability_promtail_enabled: true
+observability_syslog_ng_enabled: true

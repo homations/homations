@@ -1,0 +1,14 @@
+---
+homations_domain: traefik.me
+homations_email: foobar@example.com
+
+traefik_environment_variables:
+  TOKEN: "token"
+
+# See /roles/node-red/default/main.yml
+# admin:admin
+node_red_basicauth_htpasswd: "admin:$2y$05$4pd1Dg0ytwVYDFo0llrpz.ho/PDLQyVb8TurwrztCs6QR5bcwph/K"
+
+# See /roles/traefik/default/main.yml
+# admin:admin
+traefik_ui_basicauth_htpasswd: "admin:$2y$05$4pd1Dg0ytwVYDFo0llrpz.ho/PDLQyVb8TurwrztCs6QR5bcwph/K"

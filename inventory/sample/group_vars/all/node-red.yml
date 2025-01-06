@@ -1,0 +1,3 @@
+---
+node_red_available_externally: true
+node_red_ip_whitelist: "192.168.0.0/16, 172.16.0.0/12, 10.0.0.0/8"

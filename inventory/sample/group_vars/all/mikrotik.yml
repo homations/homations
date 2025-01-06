@@ -1,0 +1,7 @@
+mikrotik:
+  - name: RB5009
+    ip: <ip>
+  - name: CRS
+    ip: <ip>
+  - name: cAP ax
+    ip: <ip>
