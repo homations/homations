@@ -28,6 +28,9 @@
 
     - name: Traefik Docker Container
       vars:
+        traefik_middleware_list_allowlist: ["traefik-ui-ipallowlist"]
+        traefik_middleware_list_forwardauth: "{{ ['traefik-ui-basicauth'] if (traefik_ui_basicauth_enabled) else [] }}"
+        traefik_middleware_list: "{{ traefik_middleware_list_allowlist + traefik_middleware_list_forwardauth }}"
         traefik_me_volumes:
           - "{{ traefik_config_directory }}/tls.yml:/etc/traefik/tls.yml:ro"
           - "{{ traefik_config_directory }}/certs:/etc/ssl/traefik/:rw"
@@ -54,8 +57,10 @@
           traefik.http.routers.traefik-ui.tls.certresolver: "dnsresolver"
           traefik.http.routers.traefik-ui.tls.domains[0].main: "{{ homations_domain }}"
           traefik.http.routers.traefik-ui.tls.domains[0].sans: "*.{{ homations_domain }}"
+          traefik.http.middlewares.traefik-ui-chain.chain.middlewares: "{{ traefik_middleware_list | join(', ') }}"
           traefik.http.middlewares.traefik-ui-ipallowlist.ipallowlist.sourcerange: "{{ traefik_ui_ip_allowlist }}"
-          traefik.http.routers.traefik-ui.middlewares: "traefik-ui-ipallowlist@docker"
+          traefik.http.middlewares.traefik-ui-basicauth.basicauth.users: "{{ traefik_ui_basicauth_htpasswd }}"
+          traefik.http.routers.traefik-ui.middlewares: "traefik-ui-chain"
           traefik.http.routers.traefik-ui.service: "api@internal"
         volumes: "{{ traefik_default_volumes + traefik_me_volumes if (homations_domain == 'traefik.me') else traefik_default_volumes }}"
         env: "{{ traefik_environment_variables }}"

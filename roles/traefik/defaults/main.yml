@@ -28,6 +28,13 @@ traefik_restart_policy: "unless-stopped"
 traefik_log_level: "INFO"
 traefik_debug_enabled: true
 
+# traefik ui authentication
+traefik_ui_basicauth_enabled: true
+# To create user:password pair, it's possible to use this command:
+# echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
+# Use two $$ seperation in docker-compose.yml and $ in ansible
+traefik_ui_basicauth_htpasswd: "admin:$2y$05$C56VQCSDGvG4QmM5HddLZee4tEDStYuEz8RIE2D.19LjhjeJ0u2L"
+
 # find the relevant name and environment variables for your DNS provider at https://go-acme.github.io/lego/dns/
 traefik_dns_provider: cloudflare
 traefik_environment_variables:
