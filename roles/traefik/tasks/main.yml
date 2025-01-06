@@ -12,9 +12,15 @@
 
     - name: Template Traefik config.yml
       ansible.builtin.template:
-        src: traefik.yml.j2
-        dest: "{{ traefik_config_directory }}/traefik.yml"
+        src: "{{ item }}.j2"
+        dest: "{{ traefik_config_directory }}/{{ item }}"
       register: template_config
+      with_items:
+        - "traefik.yml"
+
+    - name: Configure traefik.me
+      when: homations_domain == "traefik.me"
+      ansible.builtin.include_tasks: traefik-me.yml
 
     - name: Create the homations proxy network
       community.docker.docker_network:
@@ -25,6 +31,14 @@
         traefik_middleware_list_allowlist: ["traefik-ui-ipallowlist"]
         traefik_middleware_list_forwardauth: "{{ ['traefik-ui-basicauth'] if (traefik_ui_basicauth_enabled) else [] }}"
         traefik_middleware_list: "{{ traefik_middleware_list_allowlist + traefik_middleware_list_forwardauth }}"
+        traefik_me_volumes:
+          - "{{ traefik_config_directory }}/tls.yml:/etc/traefik/tls.yml:ro"
+          - "{{ traefik_config_directory }}/certs:/etc/ssl/traefik/:rw"
+        traefik_default_volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - "{{ traefik_config_directory }}/traefik.yml:/etc/traefik/traefik.yml:ro"
+          - "{{ traefik_config_directory }}/letsencrypt:/letsencrypt:rw"
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
       community.docker.docker_container:
         name: "{{ traefik_container_name }}"
         image: "{{ traefik_image_name }}:{{ traefik_image_version }}"
@@ -48,11 +62,7 @@
           traefik.http.middlewares.traefik-ui-basicauth.basicauth.users: "{{ traefik_ui_basicauth_htpasswd }}"
           traefik.http.routers.traefik-ui.middlewares: "traefik-ui-chain"
           traefik.http.routers.traefik-ui.service: "api@internal"
-        volumes:
-          - /etc/localtime:/etc/localtime:ro
-          - "{{ traefik_config_directory }}/traefik.yml:/etc/traefik/traefik.yml:ro"
-          - "{{ traefik_config_directory }}/letsencrypt:/letsencrypt:rw"
-          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+        volumes: "{{ traefik_default_volumes + traefik_me_volumes if (homations_domain == 'traefik.me') else traefik_default_volumes }}"
         env: "{{ traefik_environment_variables }}"
         restart_policy: "{{ traefik_restart_policy }}"
         # memory: "{{ traefik_memory }}"
