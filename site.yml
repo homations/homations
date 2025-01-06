@@ -19,31 +19,58 @@
       tags:
         - alertmanager
         - observability
+    - role: observability/bind-exporter
+      tags:
+        - bind-exporter
+        - exporters
+        - observability
     - role: observability/cadvisor
       tags:
         - cadvisor
+        - exporters
         - observability
     - role: observability/node-exporter
       tags:
+        - exporters
+        - node-exporter
+        - observability
+    - role: observability/mktxp-exporter
+      tags:
+        - exporters
+        - mikrotik
+        - mktxp
         - observability
     - role: observability/prometheus
       tags:
         - prometheus
         - observability
+    - role: observability/syslog-ng
+      tags:
+        - mikrotik
+        - syslog-ng
+        - observability
     - role: observability/promtail
       tags:
-        - observability
         - logging
+        - observability
+        - promtail
     - role: observability/loki
       tags:
-        - observability
         - logging
+        - loki
+        - observability
     - role: influxdb
       tags:
         - influxdb
     - role: grafana/installation
       tags:
         - grafana
+        - logging
+        - mikrotik
+        - observability
     - role: node-red
       tags:
         - node-red
+    - role: bind9
+      tags:
+        - bind9
