@@ -12,7 +12,10 @@ observability_mktxp_exporter_restart_policy: "unless-stopped"
 
 # specs
 observability_mktxp_exporter_memory: 1g
-#
+
+# router os
+observability_mktxp_exporter_routeros_username: admin
+observability_mktxp_exporter_routeros_password: admin
 # mikrotik hardware
 # mikrotik:
 #   - name: CRS

@@ -11,7 +11,7 @@
       ansible.builtin.template:
         src: mktxp.conf.j2
         dest: "{{ observability_mktxp_exporter_config_directory }}/mktxp.conf"
-      register: named_conf_template_config
+      register: mktxp_conf_template_config
 
     - name: MKTXP-Exporter Docker Container
       community.docker.docker_container:
@@ -25,6 +25,7 @@
         networks:
           - name: "{{ homations_internal_network }}"
         restart_policy: "{{ observability_mktxp_exporter_restart_policy }}"
+        restart: "{{ mktxp_conf_template_config.changed }}"
         # memory: "{{ observability_mktxp_exporter_memory }}"
 
 - name: Stop MKTXP-Exporter
