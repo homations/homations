@@ -42,4 +42,6 @@ scrape_configs:
         job: "syslog"
     relabel_configs:
       - source_labels: ['__syslog_message_hostname']
-        target_label: 'host'
+        target_label: 'routerboard'
+      - source_labels: ['__syslog_connection_hostname']
+        target_label: 'syslog_host'
