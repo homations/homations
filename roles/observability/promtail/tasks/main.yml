@@ -36,6 +36,7 @@
         ports:
           - "1514:1514"
         restart_policy: "{{ observability_promtail_restart_policy }}"
+        restart: "{{ observability_promtail_template_config.changed }}"
         # memory: "{{ observability_promtail_memory }}"
         command:
           - "--config.file={{ observability_promtail_container_config_file_path }}"

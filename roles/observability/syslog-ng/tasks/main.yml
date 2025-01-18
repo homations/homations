@@ -24,13 +24,14 @@
         env:
           TZ: "{{ homations_timezone }}"
         volumes:
-          - "{{ observability_syslog_ng_config_file_path }}://etc/syslog-ng/syslog-ng.conf:ro"
+          - "{{ observability_syslog_ng_config_file_path }}:/etc/syslog-ng/syslog-ng.conf:ro"
         networks:
           - name: "{{ homations_internal_network }}"
         ports:
           - "514:514/udp"
           - "601:601/tcp"
         restart_policy: "{{ observability_syslog_ng_restart_policy }}"
+        restart: "{{ observability_syslog_ng_template_config.changed }}"
         # memory: "{{ observability_syslog_ng_memory }}"
         command:
           - "-edv" # stderr, debug, verbose
