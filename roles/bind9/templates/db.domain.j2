@@ -1,0 +1,28 @@
+$TTL    2d
+
+$ORIGIN {{ homations_domain }}.
+
+@			IN	SOA	ns.{{ homations_domain }}.	{{ homations_email | replace("@", ".") }}. (
+					2024102900	; Serial
+					12h		; Refresh
+					15m		; Retry
+					3w		; Expire
+					2h		; Minimum TTL
+					)
+
+			IN	NS	ns.{{ homations_domain }}.
+
+ns			IN	A	{{ bind9_ip }}
+
+; custom dns records
+
+{% for item in bind9_dns_entries %}
+	{% if bind9_dns_entries[item] is true %}
+
+{{ item }}		IN	A	{{ hostvars['homations']['ansible_default_ipv4']['address'] }}
+
+	{% endif %}
+{% endfor %}
+
+
+

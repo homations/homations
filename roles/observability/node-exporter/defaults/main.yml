@@ -1,0 +1,11 @@
+---
+observability_node_exporter_enabled: false
+
+# docker
+observability_node_exporter_container_name: "node-exporter"
+observability_node_exporter_image_name: "prom/node-exporter"
+observability_node_exporter_image_version: "latest"
+observability_node_exporter_restart_policy: "unless-stopped"
+
+# specs
+observability_node_exporter_memory: 1g

@@ -1,0 +1,25 @@
+---
+grafana_enabled: false
+grafana_available_externally: false
+
+# directories
+grafana_data_directory: "{{ homations_docker_data }}/grafana"
+grafana_config_directory: "{{ homations_docker_config }}/grafana"
+
+# network
+grafana_hostname: "grafana"
+grafana_ip_allowlist: "0.0.0.0/0"
+
+# docker
+grafana_container_name: "grafana"
+grafana_image_name: "grafana/grafana"
+grafana_image_version: "11.3.0"
+grafana_restart_policy: "unless-stopped"
+grafana_volume_name: "{{ grafana_container_name }}_data"
+
+# configuration
+grafana_security_admin_password: admin
+grafana_configuration_users_allow_sign_up: true
+
+# specs
+grafana_memory: 1g

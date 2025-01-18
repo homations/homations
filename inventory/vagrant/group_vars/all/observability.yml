@@ -1,0 +1,15 @@
+---
+# monitoring
+observability_prometheus_enabled: true
+observability_alertmanager_enabled: true
+
+observability_prometheus_available_externally: true
+observability_alertmanager_available_externally: true
+
+# exporter
+observability_node_exporter_enabled: true
+observability_cadvisor_enabled: true
+
+# logging
+observability_loki_enabled: true
+observability_promtail_enabled: true

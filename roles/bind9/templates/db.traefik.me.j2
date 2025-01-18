@@ -1,0 +1,19 @@
+$TTL    2d
+
+@		IN	SOA	ns1.{{ item.1 }}.traefik.me.	{{ homations_email | replace("@", ".") }}. (
+				202410290{{ item.0 }}	; Serial
+				12h			; Refresh
+				15m			; Retry
+				3w			; Expire
+				2h			; Minimum TTL
+				)
+
+		IN	NS	ns1.{{ item.1 }}.traefik.me.
+
+
+ns1		IN	A	{{ bind9_ip }}
+
+
+; custom dns records
+
+@		IN	A	{{ hostvars['homations']['ansible_default_ipv4']['address'] }}

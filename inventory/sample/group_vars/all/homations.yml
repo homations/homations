@@ -1,0 +1,18 @@
+homations_docker_config: /home/shei/tmp/homations
+homations_docker_data: /home/shei/tmp/homations/data
+
+homations_traefik_network: proxy
+homations_internal_network: homations
+homations_docker_volume_enabled: true
+homations_change_volume_type: false
+homations_timezone: "Europe/Berlin"
+
+## Enable some applications
+traefik_enabled: true
+portainer_enabled: true
+grafana_enabled: true
+influxdb_enabled: true
+keycloak_enabled: false
+nextcloud_enabled: false
+node_red_enabled: true
+bind9_enabled: true

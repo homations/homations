@@ -1,0 +1,11 @@
+---
+observability_bind_exporter_enabled: false
+
+# docker
+observability_bind_exporter_container_name: "bind-exporter"
+observability_bind_exporter_image_name: "prometheuscommunity/bind-exporter"
+observability_bind_exporter_image_version: "v0.7.0"
+observability_bind_exporter_restart_policy: "unless-stopped"
+
+# specs
+observability_bind_exporter_memory: 1g

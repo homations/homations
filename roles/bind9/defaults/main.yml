@@ -1,0 +1,36 @@
+---
+bind9_enabled: false
+bind9_available_externally: false
+
+# directories
+bind9_cache_directory: "{{ homations_docker_config }}/bind9/data/cache"
+bind9_config_directory: "{{ homations_docker_config }}/bind9/config"
+bind9_records_directory: "{{ homations_docker_config }}/bind9/data/records"
+
+bind9_cache_volume_name: "{{ bind9_container_name }}_cache_data"
+bind9_records_volume_name: "{{ bind9_container_name }}_records_data"
+
+# network
+bind9_ip: "127.0.0.1"
+bind9_port: "53"
+bind9_hostname: "bind9"
+bind9_ip_allowlist: "0.0.0.0/0"
+
+# docker
+bind9_container_name: "bind9"
+bind9_image_name: "ubuntu/bind9"
+bind9_image_version: "latest"
+
+# specs
+bind9_memory: 1g
+
+# configuration
+bind9_dns_forward_server_1: 1.1.1.2
+bind9_dns_forward_server_2: 1.0.0.2
+
+bind9_additional_zones: ""
+# bind9_additional_zones: >
+#   zone "test" {
+#       type master;
+#       file "/etc/bind/db.test";
+#   };

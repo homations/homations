@@ -1,0 +1,14 @@
+---
+observability_syslog_ng_enabled: false
+
+# directories
+observability_syslog_ng_config_directory: "{{ homations_docker_config }}/syslog-ng"
+
+# docker
+observability_syslog_ng_container_name: "syslog_ng"
+observability_syslog_ng_image_name: "balabit/syslog-ng"
+observability_syslog_ng_image_version: "4.8.0"
+observability_syslog_ng_restart_policy: "unless-stopped"
+
+# specs
+observability_syslog_ng_memory: 1g

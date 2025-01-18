@@ -1,0 +1,20 @@
+global:
+  resolve_timeout: {{ observability_alertmanager_config_global_resolve_timeout }}
+
+route:
+  receiver: 'default'
+  group_by: ['alertname']
+  group_wait: {{ observability_alertmanager_config_route_group_wait }}
+  group_interval: {{ observability_alertmanager_config_route_group_interval }}
+  repeat_interval: {{ observability_alertmanager_config_route_repeat_interval }}
+{% if observability_alertmanager_config_route_routes is defined and observability_alertmanager_config_route_routes | length > 0 %}
+  routes:
+  {{ observability_alertmanager_config_route_routes | to_nice_yaml(indent=2) }}
+{% endif %}
+
+receivers:
+{{ observability_alertmanager_default_config | to_nice_yaml(indent=2) }}
+{% if observability_alertmanager_config is defined and observability_alertmanager_config | length > 0 %}
+{{ observability_alertmanager_config | to_nice_yaml(indent=2) }}
+{% endif %}
+

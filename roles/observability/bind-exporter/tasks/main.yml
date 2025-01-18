@@ -1,0 +1,24 @@
+---
+- name: Start Bind-Exporter
+  when: observability_bind_exporter_enabled is true
+  block:
+    - name: Bind-Exporter Docker Container
+      community.docker.docker_container:
+        name: "{{ observability_bind_exporter_container_name }}"
+        image: "{{ observability_bind_exporter_image_name }}:{{ observability_bind_exporter_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        networks:
+          - name: "{{ homations_internal_network }}"
+        restart_policy: "{{ observability_bind_exporter_restart_policy }}"
+        # memory: "{{ observability_bind_exporter_memory }}"
+        command:
+          - "--bind.stats-url=http://{{ bind9_container_name }}:8053/"
+
+- name: Stop Bind-Exporter
+  when: observability_bind_exporter_enabled is false
+  block:
+    - name: Stop Bind-Exporter
+      community.docker.docker_container:
+        name: "{{ observability_bind_exporter_container_name }}"
+        state: absent

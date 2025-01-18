@@ -1,0 +1,45 @@
+---
+- name: Start Syslog-ng
+  when: observability_syslog_ng_enabled is true
+  vars:
+    observability_syslog_ng_config_file_path: "{{ observability_syslog_ng_config_directory }}/syslog-ng.conf"
+  block:
+    - name: Create Syslog-ng Directories
+      ansible.builtin.file:
+        path: "{{ observability_syslog_ng_config_directory }}"
+        state: directory
+
+    - name: Template syslog_ng.conf
+      ansible.builtin.template:
+        src: syslog-ng.conf.j2
+        dest: "{{ observability_syslog_ng_config_file_path }}"
+      register: observability_syslog_ng_template_config
+
+    - name: Syslog-ng Docker Container
+      community.docker.docker_container:
+        name: "{{ observability_syslog_ng_container_name }}"
+        image: "{{ observability_syslog_ng_image_name }}:{{ observability_syslog_ng_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        env:
+          TZ: "{{ homations_timezone }}"
+        volumes:
+          - "{{ observability_syslog_ng_config_file_path }}:/etc/syslog-ng/syslog-ng.conf:ro"
+        networks:
+          - name: "{{ homations_internal_network }}"
+        ports:
+          - "514:514/udp"
+          - "601:601/tcp"
+        restart_policy: "{{ observability_syslog_ng_restart_policy }}"
+        restart: "{{ observability_syslog_ng_template_config.changed }}"
+        # memory: "{{ observability_syslog_ng_memory }}"
+        command:
+          - "-edv" # stderr, debug, verbose
+
+- name: Stop Syslog-ng
+  when: observability_syslog_ng_enabled is false
+  block:
+    - name: Stop Syslog-ng
+      community.docker.docker_container:
+        name: "{{ observability_syslog_ng_container_name }}"
+        state: absent

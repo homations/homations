@@ -1,0 +1,38 @@
+---
+- name: Start Node-Exporter
+  when: observability_node_exporter_enabled is true
+  vars:
+    observability_node_exporter_config_file_name: "node_exporter.yml"
+    observability_node_exporter_host_config_file_path: "{{ observability_node_exporter_config_directory }}/{{ observability_node_exporter_config_file_name }}"
+  block:
+    - name: Create the homations internal network
+      community.docker.docker_network:
+        name: "{{ homations_internal_network }}"
+
+    - name: Node-Exporter Docker Container
+      community.docker.docker_container:
+        name: "{{ observability_node_exporter_container_name }}"
+        image: "{{ observability_node_exporter_image_name }}:{{ observability_node_exporter_image_version }}"
+        image_name_mismatch: "recreate"
+        pull: true
+        volumes:
+          - /proc:/host/proc:ro
+          - /sys:/host/sys:ro
+          - /:/rootfs:ro
+        networks:
+          - name: "{{ homations_internal_network }}"
+        restart_policy: "{{ observability_node_exporter_restart_policy }}"
+        # memory: "{{ observability_node_exporter_memory }}"
+        command:
+          - "--path.procfs=/host/proc"
+          - "--path.rootfs=/rootfs"
+          - "--path.sysfs=/host/sys"
+          - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+
+- name: Stop Node-Exporter
+  when: observability_node_exporter_enabled is false
+  block:
+    - name: Stop Node-Exporter
+      community.docker.docker_container:
+        name: "{{ observability_node_exporter_container_name }}"
+        state: absent
