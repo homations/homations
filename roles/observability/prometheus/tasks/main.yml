@@ -63,6 +63,7 @@
           - "/etc/timezone:/etc/timezone:ro"
         networks: "{{ observability_prometheus_docker_network }}"
         restart_policy: "{{ observability_prometheus_restart_policy }}"
+        restart: "{{ observability_prometheus_template_config.changed }}"
         # memory: "{{ observability_prometheus_memory }}"
         labels:
           traefik.enable: "{{ observability_prometheus_available_externally | string }}"
