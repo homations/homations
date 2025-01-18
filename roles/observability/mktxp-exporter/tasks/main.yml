@@ -21,7 +21,7 @@
         pull: true
         user: root
         volumes:
-          - "{{ observability_mktxp_exporter_config_directory }}:/root/mktxp/mktxp.conf"
+          - "{{ observability_mktxp_exporter_config_directory }}/mktxp.conf:/root/mktxp/mktxp.conf"
         networks:
           - name: "{{ homations_internal_network }}"
         restart_policy: "{{ observability_mktxp_exporter_restart_policy }}"
