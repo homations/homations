@@ -19,7 +19,7 @@
         image: "{{ observability_mktxp_exporter_image_name }}:{{ observability_mktxp_exporter_image_version }}"
         image_name_mismatch: "recreate"
         pull: true
-        # user: shei
+        user: root
         volumes:
           - "{{ observability_mktxp_exporter_config_directory }}:/root/mktxp/mktxp.conf"
         networks:
