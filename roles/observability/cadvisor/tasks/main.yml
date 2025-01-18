@@ -11,6 +11,10 @@
         image: "{{ observability_cadvisor_image_name }}:{{ observability_cadvisor_image_version }}"
         image_name_mismatch: "recreate"
         pull: true
+        command:
+          - '-housekeeping_interval=30s'
+          - '-docker_only=true'
+
         volumes:
           - /:/rootfs:ro
           - /var/run:/var/run:rw
